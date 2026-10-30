@@ -26,6 +26,8 @@ o projeto ainda não oferece contas de usuário nem implantação pública.
 ## Funcionalidades
 
 - Conversas em português, com histórico usado para contextualizar respostas.
+- Verificação de escopo antes do agente: pedidos fora de jogos recebem uma resposta
+  fixa, inclusive continuações de assuntos externos.
 - Investigação de preferências antes de recomendar jogos em pedidos ambíguos.
 - Pesquisa de jogos por nome ou filtros de plataforma, gênero e modo via IGDB.
 - Links de compra provenientes do catálogo, sujeitos à lista de lojas permitidas.
@@ -289,6 +291,9 @@ Exemplo de requisição do chat:
 O retorno contém `conversation_id` e `message`, com `role`, `content`, `videos` e
 `store_links`. As listas de anexos podem estar vazias; o texto depende do modelo.
 O histórico enviado contém somente papel e texto, sem reenviar anexos.
+Antes de executar o agente, a API classifica a mensagem atual com o contexto
+recente. Pedidos fora de jogos recebem uma resposta fixa e não acionam as
+ferramentas. A classificação usa uma chamada adicional à OpenAI.
 
 Limites principais: mensagem de até 4.000 caracteres, histórico de até 50 mensagens
 e saída de até 4.000 caracteres. Campos desconhecidos são rejeitados.

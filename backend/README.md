@@ -89,6 +89,16 @@ na web. O RAG local é opcional e usa um índice construído explicitamente; vej
 [guia completo de configuração e testes](../docs/rag-usage.md). O agente pode consultar o catálogo externo IGDB
 com argumentos tipados, dentro dos limites por requisição.
 
+Antes do agente, uma chamada ao modelo classifica a mensagem atual como relacionada
+a jogos ou fora do escopo. Ela recebe as últimas oito mensagens do histórico
+(até 1.000 caracteres cada) para entender continuações curtas. Pedidos externos,
+inclusive continuações de um assunto que o assistente aceitou por engano, recebem
+uma resposta fixa com HTTP 200; o agente e suas ferramentas não são executados.
+Uma decisão inválida do classificador retorna HTTP 502. Essa etapa usa tokens da
+OpenAI e compartilha o limite de tempo configurado com a geração da resposta.
+A classificação por modelo pode errar; o agente também recebe instruções para
+recusar assuntos fora de jogos.
+
 ### Requisição
 
 ```json
