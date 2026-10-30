@@ -327,7 +327,6 @@ Pontos para adaptar e ampliar os testes:
 - `backend/tests/fixtures/rag/`: documentos fictícios para testar ingestão e recuperação.
 - `frontend/tests/`: envio, estado, isolamento, sessão, vídeos e links.
 - `shared/trusted-store-cases.json`: casos comuns de aceitação/rejeição de URLs.
-- [Avaliação do agente](docs/agent-evaluation.md): roteiro de revisão humana.
 
 Não apresentamos contagem fixa ou selo de cobertura no README: resultados devem
 ser registrados para a revisão e o ambiente efetivamente testados.
@@ -379,18 +378,12 @@ ser registrados para a revisão e o ambiente efetivamente testados.
 | --- | --- |
 | [Backend](backend/README.md) | OpenAI, contrato HTTP, erros e operação |
 | [Frontend](frontend/README.md) | Interface, sessão e execução |
-| [Arquitetura](docs/architecture.md) | Responsabilidades, decisões e evolução |
 | [Catálogo IGDB](docs/igdb-catalog.md) | Credenciais, consultas e limites |
-| [Agente com catálogo](docs/catalog-agent.md) | Filtros e critérios de recomendação |
 | [RAG operacional](docs/rag-usage.md) | Indexação, busca, configuração e segurança |
-| [Projeto RAG](docs/rag.md) | Fundamentos e desenho documental |
 | [Base de conhecimento](knowledge/README.md) | Formato dos documentos e metadados |
-| [Lote generalista](docs/knowledge-general.md) | Fontes, critérios e avaliação do corpus |
-| [Avaliação do agente](docs/agent-evaluation.md) | Cenários para revisão humana |
 | [YouTube](docs/youtube-tutorials.md) | Configuração, autorização, player e limites |
 
-Os guias técnicos registram entregas incrementais; números de testes e notas
-históricas neles não substituem a validação da revisão atual.
+Os guias técnicos detalham a configuração e os limites das integrações.
 
 ## Autoria e licença
 

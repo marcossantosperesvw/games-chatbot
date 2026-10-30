@@ -1,4 +1,4 @@
-# Catálogo IGDB — primeira entrega
+# Catálogo IGDB
 
 ## O que está disponível
 
@@ -6,14 +6,14 @@
 metadados normalizados, a página de origem na IGDB e links de lojas presentes
 na resposta do catálogo. Esta consulta não chama a OpenAI nem consome seus créditos.
 
-O agente do chat ainda não utiliza essa pesquisa. A próxima entrega conectará
-o cliente a uma ferramenta do agente, com regras sobre quando consultar. Cards,
-links clicáveis no chat, vídeos e RAG serão implementados separadamente.
+O agente do chat usa o mesmo cliente IGDB por meio de uma ferramenta própria.
+Links de lojas aceitas podem aparecer na conversa; vídeos e RAG são integrações
+independentes.
 
 Não há uma lista fixa de jogos: a pesquisa considera os registros disponíveis
 na IGDB. Cobertura, preenchimento dos campos e nomes alternativos variam. Uma
 pesquisa por nome não é uma busca semântica por frases como "quero um jogo calmo".
-Filtros por preferências serão acrescentados posteriormente.
+O agente também pode pesquisar com filtros de plataforma, gênero e modo.
 
 ## Configurar suas credenciais
 
@@ -124,8 +124,8 @@ vida da aplicação e fechado ao encerrar o backend.
   antes de consultar novamente. `Retry-After` numérico é propagado; se ausente ou
   inválido, usamos um segundo. A aplicação continua sujeita aos limites do provedor.
 
-As descrições podem estar em outro idioma. A futura ferramenta entregará dados
-ao agente, que poderá explicá-los em português sem alterar sua origem.
+As descrições podem estar em outro idioma. O agente pode explicá-las em português
+sem alterar a origem dos dados.
 
 ## Erros e testes
 
@@ -148,13 +148,13 @@ Na pasta `backend/`, execute:
 ```bash
 uv run --locked pytest tests/test_catalog.py -q -W error
 uv run --locked pytest -q -W error
-```Ap
+```
 
 A suíte usa `httpx.MockTransport` para simular autenticação, validação, pesquisa
 e falhas, sem chamadas externas. O `httpx` já era instalado pelo cliente OpenAI;
 agora está declarado como dependência direta porque o catálogo o utiliza.
 
-## Fontes e próximos passos
+## Fontes e limites
 
 A IGDB foi escolhida para fundamentar dados de jogos e possibilitar links
 recebidos de uma fonte identificável. Ela não garante recomendações corretas por
@@ -166,7 +166,5 @@ confirme as condições de parceria e atribuição descritas no
 [FAQ IGDB](https://api-docs.igdb.com/#business-related-faq). Exiba atribuição à fonte
 quando os dados forem apresentados na interface.
 
-Depois de validar a consulta real: aprovar filtros por preferências e a ferramenta
-do agente (3B), limitar suas chamadas e resultados, ajustar o número de turnos do
-runner e decidir como exibir fontes e links no chat. A etapa de investigação de
-preferências continua com avaliação própria pendente; esta feature parte de `develop`.
+Recomendações e links exigem avaliação com consultas reais. Resultados do catálogo
+não comprovam preço, estoque ou disponibilidade regional.

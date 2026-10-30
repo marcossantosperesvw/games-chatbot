@@ -23,9 +23,10 @@ LangChain, microsserviços ou filas. Para até 5.000 trechos, um snapshot em mem
 e busca linear é um ponto inicial simples; desempenho e relevância devem ser medidos
 antes de aumentar esse limite ou migrar para outra infraestrutura.
 
-**Há um primeiro corpus real generalista em `knowledge/plataformas/`.** Veja o
-[guia do lote](knowledge-general.md) e seus testes de recuperação. Eles verificam
-evidências e filtros, mas não comprovam qualidade da redação do modelo.
+**Há um corpus generalista em `knowledge/plataformas/`.** O
+[guia da base](../knowledge/README.md) descreve o formato e os documentos.
+Os testes de recuperação verificam evidências e filtros, mas não comprovam
+qualidade da redação do modelo.
 Por padrão `RAG_ENABLED=false`, e documentos sintéticos são bloqueados na construção
 e no carregamento. Nenhum arquivo foi enviado à OpenAI para testar esta entrega.
 
@@ -209,8 +210,8 @@ perguntas, avaliando filtros de jogo/plataforma/versão. Depois avalie o texto f
 fidelidade, uso das fontes, limites e latência. Os testes simulados comprovam o
 encadeamento técnico, não relevância de embeddings reais ou qualidade editorial.
 
-Ainda faltam fontes reais e avaliação com o modelo escolhido pelo estudante.
-Não enviamos material nem fizemos chamadas pagas durante o desenvolvimento.
+O corpus inicial de fontes reais precisa de revisão periódica e avaliação com o
+modelo escolhido. A indexação lexical não envia material à OpenAI.
 Possíveis evoluções: overlap calibrado, busca híbrida, reranking, IDs estáveis entre
 revisões, atualização incremental, fontes estruturadas na interface e banco vetorial
-somente quando houver necessidade medida. Não há AWS, login ou vídeos nesta entrega.
+somente quando houver necessidade medida.
