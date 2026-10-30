@@ -5,6 +5,7 @@ import json
 from datetime import UTC, datetime
 from types import SimpleNamespace
 from uuid import uuid4
+from unittest.mock import AsyncMock
 
 import httpx
 import pytest
@@ -20,6 +21,11 @@ from app.catalog.schemas import CatalogGame, CatalogSearchResult, StoreLink
 from app.core.errors import AIProviderError
 from app.services import chat_service
 from app.tools.catalog import CatalogContext, search_games, validate_reply_urls
+
+
+@pytest.fixture(autouse=True)
+def allow_game_requests(monkeypatch):
+    monkeypatch.setattr(chat_service, "is_game_related", AsyncMock(return_value=True))
 
 
 URL = "https://store.steampowered.com/app/42/test/"

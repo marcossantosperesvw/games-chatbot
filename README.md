@@ -4,9 +4,6 @@ Assistente web para descobrir jogos e esclarecer dúvidas sobre plataformas.
 Combina conversas contextualizadas, catálogo IGDB, recuperação de documentos
 locais (RAG) e tutoriais do YouTube exibidos na própria conversa.
 
-**Status:** MVP para execução local. As conversas ficam na sessão do navegador;
-o projeto ainda não oferece contas de usuário nem implantação pública.
-
 ## Navegação
 
 - [Funcionalidades](#funcionalidades)
@@ -26,6 +23,8 @@ o projeto ainda não oferece contas de usuário nem implantação pública.
 ## Funcionalidades
 
 - Conversas em português, com histórico usado para contextualizar respostas.
+- Verificação de escopo antes do agente: pedidos fora de jogos recebem uma resposta
+  fixa, inclusive continuações de assuntos externos.
 - Investigação de preferências antes de recomendar jogos em pedidos ambíguos.
 - Pesquisa de jogos por nome ou filtros de plataforma, gênero e modo via IGDB.
 - Links de compra provenientes do catálogo, sujeitos à lista de lojas permitidas.
@@ -289,6 +288,9 @@ Exemplo de requisição do chat:
 O retorno contém `conversation_id` e `message`, com `role`, `content`, `videos` e
 `store_links`. As listas de anexos podem estar vazias; o texto depende do modelo.
 O histórico enviado contém somente papel e texto, sem reenviar anexos.
+Antes de executar o agente, a API classifica a mensagem atual com o contexto
+recente. Pedidos fora de jogos recebem uma resposta fixa e não acionam as
+ferramentas. A classificação usa uma chamada adicional à OpenAI.
 
 Limites principais: mensagem de até 4.000 caracteres, histórico de até 50 mensagens
 e saída de até 4.000 caracteres. Campos desconhecidos são rejeitados.
@@ -327,7 +329,6 @@ Pontos para adaptar e ampliar os testes:
 - `backend/tests/fixtures/rag/`: documentos fictícios para testar ingestão e recuperação.
 - `frontend/tests/`: envio, estado, isolamento, sessão, vídeos e links.
 - `shared/trusted-store-cases.json`: casos comuns de aceitação/rejeição de URLs.
-- [Avaliação do agente](docs/agent-evaluation.md): roteiro de revisão humana.
 
 Não apresentamos contagem fixa ou selo de cobertura no README: resultados devem
 ser registrados para a revisão e o ambiente efetivamente testados.
@@ -379,18 +380,12 @@ ser registrados para a revisão e o ambiente efetivamente testados.
 | --- | --- |
 | [Backend](backend/README.md) | OpenAI, contrato HTTP, erros e operação |
 | [Frontend](frontend/README.md) | Interface, sessão e execução |
-| [Arquitetura](docs/architecture.md) | Responsabilidades, decisões e evolução |
 | [Catálogo IGDB](docs/igdb-catalog.md) | Credenciais, consultas e limites |
-| [Agente com catálogo](docs/catalog-agent.md) | Filtros e critérios de recomendação |
 | [RAG operacional](docs/rag-usage.md) | Indexação, busca, configuração e segurança |
-| [Projeto RAG](docs/rag.md) | Fundamentos e desenho documental |
 | [Base de conhecimento](knowledge/README.md) | Formato dos documentos e metadados |
-| [Lote generalista](docs/knowledge-general.md) | Fontes, critérios e avaliação do corpus |
-| [Avaliação do agente](docs/agent-evaluation.md) | Cenários para revisão humana |
 | [YouTube](docs/youtube-tutorials.md) | Configuração, autorização, player e limites |
 
-Os guias técnicos registram entregas incrementais; números de testes e notas
-históricas neles não substituem a validação da revisão atual.
+Os guias técnicos detalham a configuração e os limites das integrações.
 
 ## Autoria e licença
 

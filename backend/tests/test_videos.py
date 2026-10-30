@@ -4,6 +4,7 @@ import asyncio
 import json
 from datetime import UTC, datetime
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
@@ -19,6 +20,11 @@ from app.tools.catalog import CatalogContext
 from app.tools.videos import extract_video, search_videos
 from app.videos.schemas import TutorialVideo
 from app.videos.youtube import VideoSettings, VideoUnavailable, YouTubeClient, get_video_settings
+
+
+@pytest.fixture(autouse=True)
+def allow_game_requests(monkeypatch):
+    monkeypatch.setattr(chat_service, "is_game_related", AsyncMock(return_value=True))
 
 
 ID = "abcdefghijk"

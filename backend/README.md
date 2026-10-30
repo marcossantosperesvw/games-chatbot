@@ -80,8 +80,7 @@ e links dependem da consulta.
 
 O [guia do catálogo](../docs/igdb-catalog.md) explica como criar as credenciais,
 testar pelo Swagger, interpretar os resultados e reconhecer os limites de cache,
-autenticação e links. O [guia do agente com catálogo](../docs/catalog-agent.md)
-explica filtros, limites e o roteiro de avaliação das etapas 3B e 3C.
+autenticação e links.
 
 ## Contrato do chat
 
@@ -89,6 +88,16 @@ explica filtros, limites e o roteiro de avaliação das etapas 3B e 3C.
 na web. O RAG local é opcional e usa um índice construído explicitamente; veja o
 [guia completo de configuração e testes](../docs/rag-usage.md). O agente pode consultar o catálogo externo IGDB
 com argumentos tipados, dentro dos limites por requisição.
+
+Antes do agente, uma chamada ao modelo classifica a mensagem atual como relacionada
+a jogos ou fora do escopo. Ela recebe as últimas oito mensagens do histórico
+(até 1.000 caracteres cada) para entender continuações curtas. Pedidos externos,
+inclusive continuações de um assunto que o assistente aceitou por engano, recebem
+uma resposta fixa com HTTP 200; o agente e suas ferramentas não são executados.
+Uma decisão inválida do classificador retorna HTTP 502. Essa etapa usa tokens da
+OpenAI e compartilha o limite de tempo configurado com a geração da resposta.
+A classificação por modelo pode errar; o agente também recebe instruções para
+recusar assuntos fora de jogos.
 
 ### Requisição
 
@@ -248,11 +257,9 @@ adicionar dados externos. A redação das respostas e a obediência podem variar
 O arquivo deve acompanhar o backend no deploy; se ausente, vazio ou ilegível, o
 chat retorna HTTP 503, sem fallback silencioso para regras antigas.
 
-Use o [roteiro de avaliação colaborativa](../docs/agent-evaluation.md) para testar
-pedidos ambíguos, investigação gradual, contexto suficiente, correções e conversas
-independentes. Ele também explica como registrar suas observações para decidirmos
-os próximos ajustes juntos. Os testes automatizados continuam sem custo de API;
-avaliar respostas reais na interface usa os créditos da OpenAI.
+Os testes automatizados cobrem o contrato e as ferramentas sem custo de API.
+Avalie também pedidos ambíguos, correções e conversas independentes na interface;
+respostas reais usam créditos da OpenAI.
 
 ## Tutoriais do YouTube
 
@@ -260,9 +267,7 @@ A integração opcional pesquisa vídeos e retorna um anexo validado por respost
 Configuração da chave, limites, contrato e testes estão no
 [guia de tutoriais](../docs/youtube-tutorials.md).
 
-Melhorias seguintes: avaliação das respostas reais com e sem RAG, fontes estruturadas
-na interface, streaming e implantação. Catálogo e recuperação documental já estão
-integrados ao agente. Há um [lote documental generalista](../docs/knowledge-general.md)
-com testes locais de recuperação; o RAG continua desativado por padrão.
-A evolução de infraestrutura está descrita em
-[Arquitetura](../docs/architecture.md).
+Melhorias possíveis incluem avaliação das respostas reais com e sem RAG, fontes
+estruturadas na interface, streaming e implantação. O
+[corpus generalista](../knowledge/README.md) possui testes locais de recuperação;
+o RAG continua desativado por padrão.

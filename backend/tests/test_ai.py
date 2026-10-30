@@ -3,6 +3,7 @@
 import asyncio
 import json
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
@@ -24,6 +25,7 @@ def ai_environment(monkeypatch):
     monkeypatch.setenv("OPENAI_MODEL", "test-model")
     monkeypatch.delenv("OPENAI_TIMEOUT_SECONDS", raising=False)
     monkeypatch.delenv("OPENAI_MAX_OUTPUT_TOKENS", raising=False)
+    monkeypatch.setattr(chat_service, "is_game_related", AsyncMock(return_value=True))
 
 
 def request(history=None):

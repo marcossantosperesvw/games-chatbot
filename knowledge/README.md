@@ -28,8 +28,7 @@ juntas, abaixo do limite padrão de 1.200 caracteres. Fontes ficam nos metadados
 e são devolvidas pela ferramenta. Perguntas e critérios de avaliação ficam
 [fora do corpus](../backend/tests/evaluation/knowledge-cases.json).
 
-Os antigos `docs/rag-drafts/` são histórico editorial e não integram este lote.
-Para construir e ativar, consulte o [guia do lote generalista](../docs/knowledge-general.md).
+Para construir e ativar o índice, consulte o [guia do RAG](../docs/rag-usage.md).
 
 ## Formato aprovado
 
@@ -94,8 +93,7 @@ fatos sobre jogos. `synthetic` identifica a natureza do conteúdo. A construçã
 o carregamento do índice bloqueiam exemplos fictícios por padrão; demonstrações
 exigem permissões explícitas no comando e na configuração do backend.
 
-Veja o [guia da primeira etapa do RAG](../docs/rag.md) para executar e inspecionar a ingestão.
-Para indexar, pesquisar e conectar ao chat, use o [guia completo](../docs/rag-usage.md).
+Para indexar, pesquisar e conectar ao chat, use o [guia do RAG](../docs/rag-usage.md).
 
 ## Manutenção
 
