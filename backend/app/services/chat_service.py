@@ -11,6 +11,7 @@ from app.catalog.igdb_client import IGDBClient
 from app.core.config import get_ai_settings
 from app.core.errors import AIProviderError, AITimeoutError
 from app.rag.retrieval import KnowledgeStore
+from app.services.game_scope import OUT_OF_SCOPE_REPLY, is_game_related
 from app.tools.catalog import CatalogContext, selected_store_links, validate_reply_urls
 from app.tools.knowledge import validate_reply_citations
 from app.tools.videos import extract_video
@@ -36,6 +37,8 @@ async def generate_reply(
                 timeout=settings.timeout_seconds,
                 max_retries=0,
             ) as client:
+                if not await is_game_related(request, client, settings):
+                    return AssistantMessage(content=OUT_OF_SCOPE_REPLY)
                 context.embedding_client = client
                 result = await Runner.run(
                     create_game_agent(settings, client, enable_videos=request.include_videos),

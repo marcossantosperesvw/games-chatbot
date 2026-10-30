@@ -4,6 +4,7 @@ import asyncio
 import json
 from pathlib import Path
 from types import SimpleNamespace
+from unittest.mock import AsyncMock
 from uuid import uuid4
 
 import httpx
@@ -22,6 +23,11 @@ from app.rag.retrieval import KnowledgeStore
 from app.services import chat_service
 from app.tools.catalog import CatalogContext, validate_reply_urls
 from app.tools.knowledge import search_knowledge, validate_reply_citations
+
+
+@pytest.fixture(autouse=True)
+def allow_game_requests(monkeypatch):
+    monkeypatch.setattr(chat_service, "is_game_related", AsyncMock(return_value=True))
 
 
 FIXTURES = Path(__file__).parent / "fixtures" / "rag"
