@@ -1,4 +1,4 @@
-# Chat Jogos
+# Games Advisor Chatbot
 
 Chatbot web especializado em jogos eletrônicos, com recomendações contextualizadas,
 consulta ao catálogo IGDB, recuperação de documentos locais (RAG) e tutoriais do
