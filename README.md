@@ -1,4 +1,4 @@
-# Chat Jogos
+# Games Advisor Chatbot
 
 Assistente web para descobrir jogos e esclarecer dúvidas sobre plataformas.
 Combina conversas contextualizadas, catálogo IGDB, recuperação de documentos
@@ -372,23 +372,6 @@ ser registrados para a revisão e o ambiente efetivamente testados.
 | RAG indisponível | Habilitação, caminho, construção e validade do índice; reinicie após ajustar |
 | Sem vídeo ou reprodução bloqueada | Chave, autorização, cota, relevância e permissão de incorporação; nem toda resposta exige vídeo |
 | Conversas não restauradas | Mesma aba/origem e disponibilidade do armazenamento; a interface informa falhas locais |
-
-## Limitações e evolução
-
-A aplicação já reúne os fluxos locais de conversa, catálogo, recuperação e vídeos.
-Ainda há decisões e validações antes de uma entrega pública:
-
-- Avaliar recomendações e fidelidade às fontes com um conjunto independente de perguntas.
-- Medir ganho do RAG frente ao modelo sem recuperação e revisar o corpus periodicamente.
-- Executar a suíte completa e registrar os resultados antes de uma entrega pública.
-- Adicionar proteção contra abuso, limites de custo, observabilidade e configuração de produção.
-- Planejar hospedagem/HTTPS e gestão de segredos; AWS permanece uma opção futura.
-- Avaliar streaming e atualização documental conforme necessidade, sem complexidade prematura.
-- Implementar login e banco de conversas somente se houver requisito de histórico permanente.
-
-Não há busca automática na web, preços em tempo real, compras, banco de conversas,
-CI/CD ou infraestrutura AWS operacional nesta entrega. Busca semântica opcional
-não implica que embeddings reais já tenham sido avaliados.
 
 ## Documentação complementar
 
