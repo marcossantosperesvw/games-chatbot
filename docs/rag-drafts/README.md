@@ -1,7 +1,8 @@
 # Rascunhos da base de conhecimento
 
-Primeiro lote documental para revisão humana. Estes arquivos **não estão
-indexados e ainda não são consultados pelo chatbot**. Não são instruções do agente.
+Arquivo de rascunhos documentais para revisão humana. Estes textos **não estão
+indexados nem são consultados pelo chatbot**. O corpus ativo fica em
+[`knowledge/`](../../knowledge/README.md).
 
 ## Objetivo e escopo
 
@@ -50,16 +51,12 @@ permanecem pendentes da sua revisão, inclusive quando o conteúdo corresponde �
 Registre a aprovação e o resultado da validação prática no próprio documento.
 Se não puder executar o procedimento, mantenha essa pendência explícita.
 
-## Por que ainda não existem arquivos JSON
+## Inclusão na base ativa
 
-O contrato atual exige `game`, e a busca filtra pelo nome do jogo. Estes textos
-são gerais: usar `game: "Geral"` apenas contornaria a validação e não resolveria
-a recuperação por assunto.
-
-Depois da revisão, uma etapa separada deverá adaptar e testar os metadados e a
-busca para documentos gerais e específicos. Só então criaremos os pares
-Markdown/JSON, moveremos os guias aprovados para `knowledge/`, reconstruiremos o
-índice e avaliaremos as respostas. README, modelo e roteiro de avaliação não
+O contrato atual aceita documentos gerais com `scope: "general"`. Após a revisão,
+crie os metadados JSON correspondentes, mova os pares Markdown/JSON aprovados para
+`knowledge/`, reconstrua o índice e avalie as respostas. O [guia da base ativa](../../knowledge/README.md)
+descreve o formato e os critérios. README, modelo e roteiro de avaliação não
 devem fazer parte do corpus de respostas.
 
 Nenhuma chamada paga, alteração de configuração ou indexação é necessária para

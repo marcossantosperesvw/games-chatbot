@@ -176,7 +176,7 @@ Estado inicial: cenários preparados, **avaliação real pendente**. Não há re
 do modelo registrados nesta entrega.
 
 - Data:
-- Commit ou branch avaliada:
+- Versão avaliada:
 - ID exato do modelo:
 - Limite de saída e timeout:
 

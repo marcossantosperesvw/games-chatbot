@@ -110,13 +110,3 @@ Cada implementação exige escopo e aprovação próprios.
 Antes de expor a aplicação publicamente, adicionar proteção contra abuso,
 limitação de requisições e custos, configuração segura de ambientes e análise
 de privacidade. CORS sozinho não protege uma API pública.
-
-## Fluxo Git
-
-`feature/*` normalmente nasce de `develop`. Quando há dependência de uma feature
-pendente, uma branch empilhada pode nascer dela e ter um PR para essa base; depois
-da integração da dependência, retargetar o PR para `develop`. Após testes e revisão,
-integra-se em `develop`;
-`main` recebe apenas versões aprovadas, nunca implementação direta. Commits em
-português seguem Conventional Commits. Publicar uma branch não significa aprovar
-sua integração nem implantar a aplicação.

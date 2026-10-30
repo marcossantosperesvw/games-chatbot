@@ -1,6 +1,9 @@
 # Backend
 
-API do chatbot construída com FastAPI e OpenAI Agents SDK para Python.
+API FastAPI do Chat Jogos. Coordena o agente OpenAI e as integrações com IGDB,
+documentos locais e YouTube. O frontend consome as rotas HTTP descritas abaixo.
+
+Para a visão geral e os pré-requisitos, consulte o [README principal](../README.md).
 
 ## Configuração
 
@@ -250,20 +253,6 @@ pedidos ambíguos, investigação gradual, contexto suficiente, correções e co
 independentes. Ele também explica como registrar suas observações para decidirmos
 os próximos ajustes juntos. Os testes automatizados continuam sem custo de API;
 avaliar respostas reais na interface usa os créditos da OpenAI.
-
-## Fluxo de desenvolvimento
-
-Cada tarefa começa em uma branch `feature/*`, criada a partir de `develop`.
-Depois da revisão e dos testes, a funcionalidade pode ser integrada em
-`develop`. A branch `main` recebe versões aprovadas, sem implementação direta.
-
-Use commits em português no formato Conventional Commits, por exemplo:
-`feat(api): adiciona contrato de chat com resposta simulada`.
-
-Antes de cada implementação, apresente objetivo, arquivos envolvidos,
-tecnologias, conceitos e justificativa das decisões, aguardando aprovação.
-Depois da entrega, explique as alterações, o funcionamento, como executar e
-testar, e as melhorias futuras. Cada aprovação autoriza somente a etapa descrita.
 
 ## Tutoriais do YouTube
 

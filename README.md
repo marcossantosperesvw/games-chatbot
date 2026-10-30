@@ -1,16 +1,11 @@
 # Chat Jogos
 
-Chatbot web especializado em jogos eletrônicos, com recomendações contextualizadas,
-consulta ao catálogo IGDB, recuperação de documentos locais (RAG) e tutoriais do
-YouTube com reprodução na conversa.
+Assistente web para descobrir jogos e esclarecer dúvidas sobre plataformas.
+Combina conversas contextualizadas, catálogo IGDB, recuperação de documentos
+locais (RAG) e tutoriais do YouTube exibidos na própria conversa.
 
-O projeto foi desenvolvido de forma incremental, com propósito educacional:
-aplicar desenvolvimento full-stack, integração com modelos de linguagem e boas
-práticas de engenharia sem introduzir infraestrutura desnecessária ao MVP.
-
-**Estágio atual:** MVP para execução e avaliação local. Não há implantação pública,
-autenticação ou persistência de conversas no servidor. AWS está prevista como
-evolução futura; esta documentação não representa uma certificação de produção.
+**Status:** MVP para execução local. As conversas ficam na sessão do navegador;
+o projeto ainda não oferece contas de usuário nem implantação pública.
 
 ## Navegação
 
@@ -25,7 +20,6 @@ evolução futura; esta documentação não representa uma certificação de pro
 - [Testes e qualidade](#testes-e-qualidade)
 - [Segurança, privacidade e custos](#segurança-privacidade-e-custos)
 - [Solução de problemas](#solução-de-problemas)
-- [Fluxo de desenvolvimento](#fluxo-de-desenvolvimento)
 - [Limitações e evolução](#limitações-e-evolução)
 - [Documentação complementar](#documentação-complementar)
 
@@ -142,7 +136,6 @@ chatbot/
 
 ### Pré-requisitos
 
-- Git.
 - Python 3.14 e [uv](https://docs.astral.sh/uv/).
 - Node.js 24 para executar também os testes TypeScript nativos do frontend
   (ambiente usado no desenvolvimento) e npm.
@@ -380,26 +373,6 @@ ser registrados para a revisão e o ambiente efetivamente testados.
 | Sem vídeo ou reprodução bloqueada | Chave, autorização, cota, relevância e permissão de incorporação; nem toda resposta exige vídeo |
 | Conversas não restauradas | Mesma aba/origem e disponibilidade do armazenamento; a interface informa falhas locais |
 
-## Fluxo de desenvolvimento
-
-```text
-feature/* → pull request → develop → revisão de versão → main
-```
-
-- `main`: versões aprovadas; não recebe implementação direta.
-- `develop`: base de integração das funcionalidades testadas.
-- `feature/*`: tarefas pequenas, com escopo e critérios de conclusão definidos.
-- Features dependentes podem usar branches empilhadas, com a dependência e a base
-  do PR explícitas; depois da integração, a base deve ser revisada.
-- Commits em português seguem Conventional Commits, por exemplo
-  `docs(readme): documenta arquitetura e execução do MVP`.
-- Antes de integrar, revise o diff, execute as verificações e atualize a documentação.
-  Publicar uma branch não equivale a aprovar um PR ou realizar deploy.
-
-O comportamento editável do agente fica em
-[`backend/app/agents/game_agent.md`](backend/app/agents/game_agent.md), lido a cada
-requisição. Não confunda esse arquivo com os guias explicativos em `docs/`.
-
 ## Limitações e evolução
 
 A aplicação já reúne os fluxos locais de conversa, catálogo, recuperação e vídeos.
@@ -407,7 +380,7 @@ Ainda há decisões e validações antes de uma entrega pública:
 
 - Avaliar recomendações e fidelidade às fontes com um conjunto independente de perguntas.
 - Medir ganho do RAG frente ao modelo sem recuperação e revisar o corpus periodicamente.
-- Revisar e integrar os PRs, executar a suíte completa na versão candidata e registrar a entrega.
+- Executar a suíte completa e registrar os resultados antes de uma entrega pública.
 - Adicionar proteção contra abuso, limites de custo, observabilidade e configuração de produção.
 - Planejar hospedagem/HTTPS e gestão de segredos; AWS permanece uma opção futura.
 - Avaliar streaming e atualização documental conforme necessidade, sem complexidade prematura.
