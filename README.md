@@ -380,43 +380,6 @@ ser registrados para a revisão e o ambiente efetivamente testados.
 | Sem vídeo ou reprodução bloqueada | Chave, autorização, cota, relevância e permissão de incorporação; nem toda resposta exige vídeo |
 | Conversas não restauradas | Mesma aba/origem e disponibilidade do armazenamento; a interface informa falhas locais |
 
-## Fluxo de desenvolvimento
-
-```text
-feature/* → pull request → develop → revisão de versão → main
-```
-
-- `main`: versões aprovadas; não recebe implementação direta.
-- `develop`: base de integração das funcionalidades testadas.
-- `feature/*`: tarefas pequenas, com escopo e critérios de conclusão definidos.
-- Features dependentes podem usar branches empilhadas, com a dependência e a base
-  do PR explícitas; depois da integração, a base deve ser revisada.
-- Commits em português seguem Conventional Commits, por exemplo
-  `docs(readme): documenta arquitetura e execução do MVP`.
-- Antes de integrar, revise o diff, execute as verificações e atualize a documentação.
-  Publicar uma branch não equivale a aprovar um PR ou realizar deploy.
-
-O comportamento editável do agente fica em
-[`backend/app/agents/game_agent.md`](backend/app/agents/game_agent.md), lido a cada
-requisição. Não confunda esse arquivo com os guias explicativos em `docs/`.
-
-## Limitações e evolução
-
-A aplicação já reúne os fluxos locais de conversa, catálogo, recuperação e vídeos.
-Ainda há decisões e validações antes de uma entrega pública:
-
-- Avaliar recomendações e fidelidade às fontes com um conjunto independente de perguntas.
-- Medir ganho do RAG frente ao modelo sem recuperação e revisar o corpus periodicamente.
-- Revisar e integrar os PRs, executar a suíte completa na versão candidata e registrar a entrega.
-- Adicionar proteção contra abuso, limites de custo, observabilidade e configuração de produção.
-- Planejar hospedagem/HTTPS e gestão de segredos; AWS permanece uma opção futura.
-- Avaliar streaming e atualização documental conforme necessidade, sem complexidade prematura.
-- Implementar login e banco de conversas somente se houver requisito de histórico permanente.
-
-Não há busca automática na web, preços em tempo real, compras, banco de conversas,
-CI/CD ou infraestrutura AWS operacional nesta entrega. Busca semântica opcional
-não implica que embeddings reais já tenham sido avaliados.
-
 ## Documentação complementar
 
 | Guia | Conteúdo |
