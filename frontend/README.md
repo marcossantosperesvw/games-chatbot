@@ -1,7 +1,8 @@
 # Interface do Chat Jogos
 
-Frontend em Next.js, React, TypeScript e Tailwind CSS. A interface conversa
-diretamente com a API FastAPI por HTTP/JSON, usando `POST /api/chat`.
+Interface web do Chat Jogos, construída com Next.js, React, TypeScript e
+Tailwind CSS. Usa a API FastAPI para conversar com o agente; as credenciais ficam
+no backend. Consulte o [README principal](../README.md) para configurar o projeto completo.
 
 ## Tutoriais em vídeo
 
@@ -16,8 +17,15 @@ aplicação está na rota `/privacidade`. Falhas de pesquisa não impedem o text
 
 ## Executar localmente
 
-Na pasta `frontend/`, instale as dependências com `npm ci`. Crie seu arquivo
-local de configuração a partir de `.env.example` e defina, se necessário:
+Prepare o [backend](../backend/README.md). Na pasta `frontend/`, instale as
+dependências e crie a configuração local, se ainda não existir:
+
+```bash
+npm ci
+cp -n .env.example .env.local
+```
+
+Defina a URL da API em `.env.local`, se necessário:
 
 ```dotenv
 NEXT_PUBLIC_API_URL=http://localhost:8000
@@ -42,7 +50,7 @@ configuração padrão de desenvolvimento.
 `NEXT_PUBLIC_API_URL` é uma URL pública incorporada durante o build. Ela não
 deve conter credenciais. Chaves da OpenAI pertencem exclusivamente ao backend.
 
-## Funcionalidades desta etapa
+## Funcionalidades
 
 - Várias conversas salvas na sessão da aba, com mensagens e rascunhos separados.
 - Menu lateral com títulos automáticos, seleção ativa e conversas mais recentes primeiro.
@@ -177,11 +185,9 @@ rascunhos e chegada de respostas/erros após trocar a conversa selecionada.
 11. Confira o uso por teclado e a apresentação em uma largura de 390 pixels;
     o botão "Conversas" deve abrir o menu e a seleção deve recolhê-lo.
 
-## Próximas etapas
+## Evolução
 
-RAG e catálogo externo, conforme aprovação de cada etapa. Persistência entre
-sessões e contas de usuário podem ser avaliadas futuramente. O fluxo Git usa
-branches `feature/*` a partir de `develop`, com
-commits em português no formato Conventional Commits. Após testes e revisão,
-as funcionalidades podem ser integradas em `develop`; versões aprovadas
-seguem para `main`.
+Persistência entre sessões, contas de usuário e implantação pública dependem de
+decisões sobre autenticação, privacidade, custos e operação. O catálogo IGDB e o
+RAG local já estão integrados ao backend; o RAG precisa de um índice construído e
+habilitado para participar das respostas.

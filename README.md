@@ -1,16 +1,11 @@
 # Games Advisor Chatbot
 
-Chatbot web especializado em jogos eletrônicos, com recomendações contextualizadas,
-consulta ao catálogo IGDB, recuperação de documentos locais (RAG) e tutoriais do
-YouTube com reprodução na conversa.
+Assistente web para descobrir jogos e esclarecer dúvidas sobre plataformas.
+Combina conversas contextualizadas, catálogo IGDB, recuperação de documentos
+locais (RAG) e tutoriais do YouTube exibidos na própria conversa.
 
-O projeto foi desenvolvido de forma incremental, com propósito educacional:
-aplicar desenvolvimento full-stack, integração com modelos de linguagem e boas
-práticas de engenharia sem introduzir infraestrutura desnecessária ao MVP.
-
-**Estágio atual:** MVP para execução e avaliação local. Não há implantação pública,
-autenticação ou persistência de conversas no servidor. AWS está prevista como
-evolução futura; esta documentação não representa uma certificação de produção.
+**Status:** MVP para execução local. As conversas ficam na sessão do navegador;
+o projeto ainda não oferece contas de usuário nem implantação pública.
 
 ## Navegação
 
@@ -25,7 +20,6 @@ evolução futura; esta documentação não representa uma certificação de pro
 - [Testes e qualidade](#testes-e-qualidade)
 - [Segurança, privacidade e custos](#segurança-privacidade-e-custos)
 - [Solução de problemas](#solução-de-problemas)
-- [Fluxo de desenvolvimento](#fluxo-de-desenvolvimento)
 - [Limitações e evolução](#limitações-e-evolução)
 - [Documentação complementar](#documentação-complementar)
 
@@ -142,7 +136,6 @@ chatbot/
 
 ### Pré-requisitos
 
-- Git.
 - Python 3.14 e [uv](https://docs.astral.sh/uv/).
 - Node.js 24 para executar também os testes TypeScript nativos do frontend
   (ambiente usado no desenvolvimento) e npm.
