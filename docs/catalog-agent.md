@@ -239,13 +239,6 @@ O Swagger de `GET /api/games` permite comparar campos e links de um título com 
 resposta do agente, embora consultas em momentos distintos possam divergir. A suíte
 simulada comprova o encadeamento técnico; aprovação comportamental exige modelo real.
 
-## Git e próximos passos
-
-As implementações de catálogo e esclarecimento já foram integradas em `develop`.
-O PR #8 substituiu o fluxo anterior de esclarecimento, e o PR #9 alinhou a
-documentação ao Markdown. Mudanças de comportamento devem ser feitas em
-`backend/app/agents/game_agent.md`, não reintroduzindo constantes antigas no Python.
-
 Próximas melhorias: avaliar relevância e orçamento de contexto, ajustar
 taxonomias/atalhos, resposta estruturada com proveniência para cards de lojas,
 integração de vídeos e fontes reais para o RAG local já implementado. Não adicionamos
