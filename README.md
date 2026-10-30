@@ -4,9 +4,6 @@ Assistente web para descobrir jogos e esclarecer dúvidas sobre plataformas.
 Combina conversas contextualizadas, catálogo IGDB, recuperação de documentos
 locais (RAG) e tutoriais do YouTube exibidos na própria conversa.
 
-**Status:** MVP para execução local. As conversas ficam na sessão do navegador;
-o projeto ainda não oferece contas de usuário nem implantação pública.
-
 ## Navegação
 
 - [Funcionalidades](#funcionalidades)
