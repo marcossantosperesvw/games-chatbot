@@ -81,7 +81,7 @@ export function Chat() {
         <ConversationSidebar
           conversations={chat.conversations}
           activeConversationId={chat.activeConversation?.id}
-          pendingConversationId={chat.pendingConversationId}
+          pendingConversationIds={chat.pendingConversationIds}
           isOpen={isSidebarOpen}
           onSelect={selectConversation}
         />
@@ -114,12 +114,6 @@ export function Chat() {
               + Nova conversa
             </button>
           </div>
-
-          {chat.isWaitingForOtherConversation && (
-            <p role="status" className="border-b border-slate-800 px-4 py-3 text-xs leading-5 text-indigo-200 sm:px-8">
-              Uma resposta está sendo preparada em outra conversa. Você pode navegar e escrever; aguarde para enviar.
-            </p>
-          )}
 
           {!chat.isReady ? (
             <div role="status" className="flex flex-1 items-center justify-center text-sm text-slate-400">
@@ -159,7 +153,7 @@ export function Chat() {
 
           <div className="border-t border-slate-800 px-4 py-2 text-xs leading-5 text-slate-400 sm:px-8">
             <label className="flex items-start gap-2">
-              <input type="checkbox" checked={chat.includeVideos} disabled={chat.isSending || chat.isWaitingForOtherConversation}
+              <input type="checkbox" checked={chat.includeVideos} disabled={chat.isSending}
                 onChange={(event) => chat.setIncludeVideos(event.target.checked)} className="mt-1 accent-indigo-500" />
               <span>Incluir tutoriais do YouTube quando úteis. Autorizo o envio dos termos relevantes da pergunta ao Google e aceito os{" "}
                 <a href="https://www.youtube.com/t/terms" target="_blank" rel="noopener noreferrer" className="underline">Termos do YouTube</a>{" "}
@@ -172,7 +166,6 @@ export function Chat() {
             draft={chat.draft}
             isSending={chat.isSending}
             isBlocked={!chat.isReady}
-            isSendBlocked={chat.isWaitingForOtherConversation}
             error={chat.error}
             historyError={chat.historyError}
             onDraftChange={chat.setDraft}

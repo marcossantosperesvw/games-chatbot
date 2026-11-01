@@ -3,7 +3,7 @@ import type { Conversation } from "@/types/chat";
 interface ConversationSidebarProps {
   conversations: Conversation[];
   activeConversationId?: string;
-  pendingConversationId: string | null;
+  pendingConversationIds: string[];
   isOpen: boolean;
   onSelect: (id: string) => void;
 }
@@ -11,7 +11,7 @@ interface ConversationSidebarProps {
 export function ConversationSidebar({
   conversations,
   activeConversationId,
-  pendingConversationId,
+  pendingConversationIds,
   isOpen,
   onSelect,
 }: ConversationSidebarProps) {
@@ -33,7 +33,7 @@ export function ConversationSidebar({
         <ul className="flex flex-col gap-1">
           {ordered.map((conversation) => {
             const isActive = conversation.id === activeConversationId;
-            const isPending = conversation.id === pendingConversationId;
+            const isPending = pendingConversationIds.includes(conversation.id);
             const count = conversation.messages.length;
             return (
               <li key={conversation.id}>

@@ -12,8 +12,7 @@ export function useChat() {
   const [includeVideos, setIncludeVideos] = useState(false);
   const [state, dispatch] = useReducer(conversationsReducer, initialConversationsState);
   const canPersist = useRef(false);
-  const inFlight = useRef(false);
-  const activeRequest = useRef<AbortController | null>(null);
+  const activeRequests = useRef(new Map<string, AbortController>());
 
   useEffect(() => {
     const restored = loadConversationSession();
@@ -24,7 +23,11 @@ export function useChat() {
       session = { version: 1, conversations: [conversation], activeConversationId: conversation.id };
     }
     dispatch({ type: "restore", session, warning: restored.warning });
-    return () => activeRequest.current?.abort();
+    const requests = activeRequests.current;
+    return () => {
+      for (const controller of requests.values()) controller.abort();
+      requests.clear();
+    };
   }, []);
 
   useEffect(() => {
@@ -42,10 +45,11 @@ export function useChat() {
   const conversation = state.session?.conversations.find(
     ({ id }) => id === state.session?.activeConversationId,
   );
-  const isSending = Boolean(conversation && state.pending?.conversationId === conversation.id);
+  const pending = conversation ? state.pendingByConversation[conversation.id] : undefined;
+  const isSending = Boolean(pending);
   const messages = conversation
-    ? isSending && state.pending
-      ? [...conversation.messages, state.pending.userMessage]
+    ? pending
+      ? [...conversation.messages, pending.userMessage]
       : conversation.messages
     : [];
 
@@ -64,7 +68,7 @@ export function useChat() {
   }
 
   async function sendMessage() {
-    if (inFlight.current || !conversation) return;
+    if (!conversation || activeRequests.current.has(conversation.id)) return;
     const conversationId = conversation.id;
     let request: ChatRequest;
 
@@ -86,8 +90,7 @@ export function useChat() {
       content: request.message,
     };
     const controller = new AbortController();
-    activeRequest.current = controller;
-    inFlight.current = true;
+    activeRequests.current.set(conversationId, controller);
     dispatch({
       type: "begin",
       pending: { conversationId, userMessage },
@@ -113,7 +116,9 @@ export function useChat() {
         error: cause instanceof Error ? cause.message : "Não foi possível enviar. Tente novamente.",
       });
     } finally {
-      inFlight.current = false;
+      if (activeRequests.current.get(conversationId) === controller) {
+        activeRequests.current.delete(conversationId);
+      }
     }
   }
 
@@ -122,14 +127,13 @@ export function useChat() {
     includeVideos,
     setIncludeVideos,
     activeConversation: conversation,
-    pendingConversationId: state.pending?.conversationId ?? null,
+    pendingConversationIds: Object.keys(state.pendingByConversation),
     isReady: state.session !== null,
     storageWarning: state.storageWarning,
     messages,
     draft: isSending ? "" : conversation?.draft ?? "",
     setDraft,
     isSending,
-    isWaitingForOtherConversation: Boolean(state.pending && !isSending),
     error: conversation ? state.errors[conversation.id] || null : null,
     historyError: conversation ? getHistoryError(conversation.messages) : null,
     sendMessage,

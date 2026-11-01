@@ -6,7 +6,6 @@ interface ChatComposerProps {
   draft: string;
   isSending: boolean;
   isBlocked: boolean;
-  isSendBlocked: boolean;
   error: string | null;
   historyError: string | null;
   onDraftChange: (value: string) => void;
@@ -17,7 +16,6 @@ export function ChatComposer({
   draft,
   isSending,
   isBlocked,
-  isSendBlocked,
   error,
   historyError,
   onDraftChange,
@@ -28,7 +26,7 @@ export function ChatComposer({
   const length = countCharacters(draft.trim());
   const isTooLong = length > MAX_MESSAGE_LENGTH;
   const canSend =
-    Boolean(length) && !isTooLong && !isSending && !isBlocked && !isSendBlocked && !historyError;
+    Boolean(length) && !isTooLong && !isSending && !isBlocked && !historyError;
 
   useEffect(() => {
     if (wasSending.current && !isSending) input.current?.focus();

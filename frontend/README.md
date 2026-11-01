@@ -59,7 +59,7 @@ deve conter credenciais. Chaves da OpenAI pertencem exclusivamente ao backend.
 - Apresentação inicial com exemplos para descobrir jogos, instalar inicializadores,
   entender serviços de plataforma e conectar controles. Os exemplos não ativam
   buscas de vídeos: a autorização do YouTube continua separada e desligada por padrão.
-- Indicação de carregamento e bloqueio de envios simultâneos.
+- Indicação de carregamento por conversa e envios simultâneos em conversas diferentes.
 - Erros em português, preservando o rascunho e as mensagens anteriores.
 - Nova conversa sem apagar as anteriores; recuperação pelo menu lateral.
 - Navegação entre conversas enquanto uma resposta está sendo preparada.
@@ -116,9 +116,9 @@ a página. Cada requisição inclui somente as mensagens anteriores da conversa 
 `history`; a mensagem atual aparece uma única vez em `message`. IDs locais da
 interface não são enviados dentro das mensagens.
 
-Só um envio é executado por vez, mas é possível criar e selecionar conversas
-durante a espera. Em outra conversa, o campo continua editável e somente o envio
-fica bloqueado. Respostas e erros são associados à conversa que originou o envio;
+Conversas diferentes podem executar envios simultaneamente. Cada conversa permite
+apenas um envio em andamento para preservar a ordem do contexto. É possível
+criar e selecionar conversas durante a espera. Respostas e erros são associados à conversa que originou o envio;
 chegadas tardias não alteram a seleção ou os rascunhos de outras conversas.
 
 A mensagem do usuário aparece enquanto aguarda, mas só entra no histórico
@@ -176,8 +176,9 @@ rascunhos e chegada de respostas/erros após trocar a conversa selecionada.
    que mensagens e rascunhos permanecem separados.
 7. Atualize a página: a lista, a conversa selecionada e os rascunhos devem voltar.
 8. Atrase uma resposta pelas ferramentas de rede do navegador. Crie ou selecione
-   outra conversa, escreva nela e confira que a resposta chega apenas à conversa
-   de origem. Durante a espera, nenhum segundo envio deve ser permitido.
+   outra conversa e envie nela antes da primeira terminar. Confira os indicadores
+   de espera em ambas e que cada resposta chega apenas à conversa de origem,
+   mesmo fora de ordem. Na mesma conversa, um segundo envio fica bloqueado.
 9. Recarregue durante um envio: a mensagem deve voltar como rascunho, sem ser
    enviada automaticamente e sem deixar uma indicação permanente de carregamento.
 10. Pare o backend e envie uma mensagem: o erro deve aparecer, com o rascunho
