@@ -183,23 +183,25 @@ npm audit
 ```
 
 A atualização de segurança usa Next.js e `eslint-config-next` 16.4.3 e Zod
-4.6.7 no lockfile. O override de `minimatch@^10.2.6` para 11.0.1 corrige a
-dependência dos consumidores modernos, preservando a API usada por eles.
-Remova esse override quando as dependências passarem a exigir uma versão corrigida.
+4.6.7 no lockfile. O override de `minimatch` para 11.0.1 remove as versões
+afetadas pelo [aviso de segurança](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+Na verificação desta atualização, tanto a auditoria completa quanto a de
+produção retornaram zero vulnerabilidades.
 
-Na verificação desta atualização, a auditoria de produção retornou zero
-vulnerabilidades. A auditoria completa ainda reportou cinco ocorrências moderadas,
-todas na cadeia de lint: `eslint-config-next`, `eslint-plugin-import`,
-`eslint-plugin-jsx-a11y`, `eslint-plugin-react` e sua dependência `minimatch` 3.1.5.
-São relatórios relacionados ao mesmo
-[aviso de segurança](https://github.com/advisories/GHSA-g3hv-75wg-m249),
-não cinco falhas independentes da interface.
+Os plugins `eslint-plugin-import`, `eslint-plugin-jsx-a11y` e
+`eslint-plugin-react` ainda usam chamadas da API antiga de `minimatch`.
+O script `postinstall` aplica um adaptador local a essas chamadas, delegando o
+processamento de padrões exclusivamente à versão corrigida. As regras de lint
+continuam habilitadas e possuem testes de regressão para essa integração.
+Consulte os [detalhes de manutenção](vendor/minimatch-compat/README.md).
 
-Esses plugins ainda dependem da API antiga de `minimatch`; forçar a versão 11
-globalmente quebra essa API. A correção restante depende de versões compatíveis
-dos plugins ou de uma migração das ferramentas de lint. Não use
-`npm audit fix --force`: a resolução sugerida nesta verificação regride
-`eslint-config-next` para 12.0.4, incompatível com a configuração atual.
+Use `npm ci` com os scripts de instalação habilitados. Caso tenha instalado com
+`--ignore-scripts`, execute `npm run postinstall` antes do lint e dos testes.
+O adaptador valida as versões dos três plugins e interrompe a instalação se
+elas mudarem: nesse caso, revise a integração antes de aceitar a atualização.
+Remova o script, o adaptador e o override quando os plugins suportarem
+nativamente uma versão corrigida. Evite `npm audit fix --force`, que pode
+substituir a configuração atual por versões incompatíveis.
 
 `--loglevel=error` controla apenas os logs de instalação; não corrige
 vulnerabilidades nem oculta o resumo da auditoria. Os resultados podem mudar

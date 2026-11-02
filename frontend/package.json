@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/patch-eslint-minimatch.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -16,7 +17,7 @@
     "react-dom": "19.3.0"
   },
   "overrides": {
-    "minimatch@^10.2.6": "11.0.1"
+    "minimatch": "11.0.1"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
