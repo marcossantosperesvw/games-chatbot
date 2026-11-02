@@ -172,6 +172,39 @@ substituídas nos testes: não exigem backend em execução, rede ou credenciais
 A suíte também verifica a recuperação da sessão, falhas de armazenamento,
 rascunhos e chegada de respostas/erros após trocar a conversa selecionada.
 
+## Auditoria de dependências
+
+Na pasta `frontend/`, consulte separadamente as dependências de produção e o
+conjunto completo, incluindo as ferramentas de desenvolvimento:
+
+```bash
+npm audit --omit=dev
+npm audit
+```
+
+A atualização de segurança usa Next.js e `eslint-config-next` 16.4.3 e Zod
+4.6.7 no lockfile. O override de `minimatch@^10.2.6` para 11.0.1 corrige a
+dependência dos consumidores modernos, preservando a API usada por eles.
+Remova esse override quando as dependências passarem a exigir uma versão corrigida.
+
+Na verificação desta atualização, a auditoria de produção retornou zero
+vulnerabilidades. A auditoria completa ainda reportou cinco ocorrências moderadas,
+todas na cadeia de lint: `eslint-config-next`, `eslint-plugin-import`,
+`eslint-plugin-jsx-a11y`, `eslint-plugin-react` e sua dependência `minimatch` 3.1.5.
+São relatórios relacionados ao mesmo
+[aviso de segurança](https://github.com/advisories/GHSA-g3hv-75wg-m249),
+não cinco falhas independentes da interface.
+
+Esses plugins ainda dependem da API antiga de `minimatch`; forçar a versão 11
+globalmente quebra essa API. A correção restante depende de versões compatíveis
+dos plugins ou de uma migração das ferramentas de lint. Não use
+`npm audit fix --force`: a resolução sugerida nesta verificação regride
+`eslint-config-next` para 12.0.4, incompatível com a configuração atual.
+
+`--loglevel=error` controla apenas os logs de instalação; não corrige
+vulnerabilidades nem oculta o resumo da auditoria. Os resultados podem mudar
+conforme novos avisos são publicados.
+
 ## Roteiro de verificação manual
 
 1. Abra a interface com o backend em execução e envie uma mensagem pelo botão.
