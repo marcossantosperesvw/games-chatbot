@@ -17,13 +17,24 @@ aplicação está na rota `/privacidade`. Falhas de pesquisa não impedem o text
 
 ## Executar localmente
 
-Prepare o [backend](../backend/README.md). Na pasta `frontend/`, instale as
-dependências e crie a configuração local, se ainda não existir:
+Use Node.js 24 e prepare o [backend](../backend/README.md). A partir da raiz do
+repositório, entre na pasta `frontend/`, instale as dependências e crie a
+configuração local, se ainda não existir:
 
 ```bash
-npm ci
+cd frontend
+npm ci --loglevel=error
 cp -n .env.example .env.local
 ```
+
+Se o terminal já estiver em `frontend/`, pule o comando `cd frontend`.
+O parâmetro `--loglevel=error` oculta os avisos do npm durante a instalação,
+mantendo os erros visíveis. Isso evita os avisos conhecidos de `peerDependencies`
+dos plugins de lint que ainda declaram suporte somente até ESLint 9, embora o
+[Next.js 16.4 suporte ESLint 10](https://nextjs.org/docs/app/api-reference/config/eslint#setup-eslint).
+O parâmetro não altera a resolução das dependências nem corrige esses avisos;
+para examiná-los, execute `npm ci` sem ele. Aguarde a instalação terminar com
+sucesso antes de iniciar o frontend.
 
 Defina a URL da API em `.env.local`, se necessário:
 
