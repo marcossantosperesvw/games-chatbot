@@ -77,7 +77,7 @@ test("resposta de A chega em A mesmo com B selecionada e com outro rascunho", ()
   assert.equal(find(state, A).draft, "");
   assert.deepEqual(find(state, B).messages, []);
   assert.equal(find(state, B).draft, "Quero um jogo de corrida");
-  assert.equal(state.pending, null);
+  assert.deepEqual(state.pendingByConversation, {});
   assert.deepEqual(find(previous, A).messages, []);
 });
 
@@ -93,10 +93,10 @@ test("falha em A preserva o rascunho original e não mostra erro em B", () => {
   assert.equal(state.errors[A], "Falha na conexão");
   assert.equal(state.errors[B], undefined);
   assert.deepEqual(find(state, A).messages, []);
-  assert.equal(state.pending, null);
+  assert.deepEqual(state.pendingByConversation, {});
 });
 
-test("permite apenas um envio por vez e ignora respostas de requisições diferentes", () => {
+test("permite apenas um envio por conversa e ignora respostas de requisições diferentes", () => {
   const state = beginInA();
   assert.equal(reduce(state, { type: "begin", pending: { conversationId: A, userMessage }, now: T2 }), state);
   assert.equal(reduce(state, { type: "success", conversationId: B, requestId: M, assistant, now: T2 }), state);
@@ -104,6 +104,73 @@ test("permite apenas um envio por vez e ignora respostas de requisições difere
   assert.equal(reduce(state, { type: "draft", conversationId: A, draft: "Alterado durante envio", now: T2 }), state);
   const completed = reduce(state, { type: "success", conversationId: A, requestId: M, assistant, now: T2 });
   assert.equal(reduce(completed, { type: "success", conversationId: A, requestId: M, assistant, now: T2 }), completed);
+});
+
+function beginInBoth() {
+  let state = beginInA();
+  state = reduce(state, { type: "create", conversation: createConversation(B, T2) });
+  state = reduce(state, { type: "draft", conversationId: B, draft: "Pergunta de B", now: T2 });
+  return reduce(state, {
+    type: "begin", pending: { conversationId: B, userMessage: { ...userMessage, id: B, content: "Pergunta de B" } }, now: T2,
+  });
+}
+
+test("envios simultâneos concluem fora de ordem sem misturar históricos ou liberar outra conversa", () => {
+  for (const first of [A, B]) {
+    const second = first === A ? B : A;
+    const state = beginInBoth();
+    assert.deepEqual(Object.keys(state.pendingByConversation).sort(), [A, B]);
+    const pending = state.pendingByConversation[first];
+    const firstReply = { ...assistant, content: `Resposta de ${first}` };
+    const completed = reduce(state, { type: "success", conversationId: first, requestId: pending.userMessage.id, assistant: firstReply, now: T2 });
+
+    assert.deepEqual(find(completed, first).messages, [pending.userMessage, firstReply]);
+    assert.deepEqual(find(completed, second).messages, []);
+    assert.equal(find(completed, first).draft, "");
+    assert.equal(find(completed, second).draft, find(state, second).draft);
+    assert.deepEqual(Object.keys(completed.pendingByConversation), [second]);
+    assert.equal(completed.session.activeConversationId, B);
+    assert.equal(reduce(completed, { type: "begin", pending: state.pendingByConversation[second], now: T2 }), completed);
+    assert.equal(reduce(completed, { type: "success", conversationId: first, requestId: pending.userMessage.id, assistant, now: T2 }), completed);
+
+    const final = reduce(completed, { type: "success", conversationId: second, requestId: state.pendingByConversation[second].userMessage.id, assistant, now: T2 });
+    assert.deepEqual(final.pendingByConversation, {});
+    assert.equal(find(final, A).messages.length, 2);
+    assert.equal(find(final, B).messages.length, 2);
+    assert.deepEqual(Object.keys(state.pendingByConversation).sort(), [A, B]);
+  }
+});
+
+test("falha e nova tentativa em A não interrompem B nem aceitam a resposta antiga de A", () => {
+  let state = beginInBoth();
+  const pendingB = state.pendingByConversation[B];
+  state = reduce(state, { type: "failure", conversationId: A, requestId: M, error: "Falha em A" });
+  assert.equal(state.pendingByConversation[B], pendingB);
+  assert.equal(find(state, A).draft, "  Quero um RPG\n");
+  assert.equal(state.errors[B], "");
+
+  state = reduce(state, { type: "begin", pending: { conversationId: A, userMessage: { ...userMessage, id: R } }, now: T2 });
+  assert.equal(state.errors[A], "");
+  assert.equal(reduce(state, { type: "success", conversationId: A, requestId: M, assistant, now: T2 }), state);
+  assert.equal(reduce(state, { type: "failure", conversationId: A, requestId: M, error: "Erro antigo" }), state);
+  state = reduce(state, { type: "success", conversationId: B, requestId: B, assistant, now: T2 });
+  assert.deepEqual(Object.keys(state.pendingByConversation), [A]);
+  state = reduce(state, { type: "success", conversationId: A, requestId: R, assistant, now: T2 });
+  assert.deepEqual(state.pendingByConversation, {});
+});
+
+test("recarga com dois envios recupera ambos os rascunhos sem restaurar requisições", () => {
+  const state = beginInBoth();
+  const storage = storageWith();
+  saveConversationSession(state.session, () => storage);
+  const loaded = loadConversationSession(() => storage);
+  const restored = reduce(initialConversationsState, { type: "restore", session: loaded.session, warning: loaded.warning });
+  for (const id of [A, B]) {
+    assert.equal(find(restored, id).draft, find(state, id).draft);
+    assert.deepEqual(find(restored, id).messages, []);
+  }
+  assert.deepEqual(restored.pendingByConversation, {});
+  assert.equal(storage.values.get(CONVERSATION_STORAGE_KEY).includes("pendingByConversation"), false);
 });
 
 test("não seleciona IDs inexistentes nem duplica conversa na inicialização", () => {
@@ -146,7 +213,7 @@ test("recarga durante envio recupera rascunho e não restaura envio ou mensagem 
 
   assert.equal(find(restored, A).draft, "  Quero um RPG\n");
   assert.deepEqual(find(restored, A).messages, []);
-  assert.equal(restored.pending, null);
+  assert.deepEqual(restored.pendingByConversation, {});
   assert.deepEqual(restored.errors, {});
   assert.equal(storage.values.get(CONVERSATION_STORAGE_KEY).includes('"pending"'), false);
 });

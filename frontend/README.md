@@ -17,13 +17,24 @@ aplicação está na rota `/privacidade`. Falhas de pesquisa não impedem o text
 
 ## Executar localmente
 
-Prepare o [backend](../backend/README.md). Na pasta `frontend/`, instale as
-dependências e crie a configuração local, se ainda não existir:
+Use Node.js 24 e prepare o [backend](../backend/README.md). A partir da raiz do
+repositório, entre na pasta `frontend/`, instale as dependências e crie a
+configuração local, se ainda não existir:
 
 ```bash
-npm ci
+cd frontend
+npm ci --loglevel=error
 cp -n .env.example .env.local
 ```
+
+Se o terminal já estiver em `frontend/`, pule o comando `cd frontend`.
+O parâmetro `--loglevel=error` oculta os avisos do npm durante a instalação,
+mantendo os erros visíveis. Isso evita os avisos conhecidos de `peerDependencies`
+dos plugins de lint que ainda declaram suporte somente até ESLint 9, embora o
+[Next.js 16.4 suporte ESLint 10](https://nextjs.org/docs/app/api-reference/config/eslint#setup-eslint).
+O parâmetro não altera a resolução das dependências nem corrige esses avisos;
+para examiná-los, execute `npm ci` sem ele. Aguarde a instalação terminar com
+sucesso antes de iniciar o frontend.
 
 Defina a URL da API em `.env.local`, se necessário:
 
@@ -59,7 +70,7 @@ deve conter credenciais. Chaves da OpenAI pertencem exclusivamente ao backend.
 - Apresentação inicial com exemplos para descobrir jogos, instalar inicializadores,
   entender serviços de plataforma e conectar controles. Os exemplos não ativam
   buscas de vídeos: a autorização do YouTube continua separada e desligada por padrão.
-- Indicação de carregamento e bloqueio de envios simultâneos.
+- Indicação de carregamento por conversa e envios simultâneos em conversas diferentes.
 - Erros em português, preservando o rascunho e as mensagens anteriores.
 - Nova conversa sem apagar as anteriores; recuperação pelo menu lateral.
 - Navegação entre conversas enquanto uma resposta está sendo preparada.
@@ -116,9 +127,9 @@ a página. Cada requisição inclui somente as mensagens anteriores da conversa 
 `history`; a mensagem atual aparece uma única vez em `message`. IDs locais da
 interface não são enviados dentro das mensagens.
 
-Só um envio é executado por vez, mas é possível criar e selecionar conversas
-durante a espera. Em outra conversa, o campo continua editável e somente o envio
-fica bloqueado. Respostas e erros são associados à conversa que originou o envio;
+Conversas diferentes podem executar envios simultaneamente. Cada conversa permite
+apenas um envio em andamento para preservar a ordem do contexto. É possível
+criar e selecionar conversas durante a espera. Respostas e erros são associados à conversa que originou o envio;
 chegadas tardias não alteram a seleção ou os rascunhos de outras conversas.
 
 A mensagem do usuário aparece enquanto aguarda, mas só entra no histórico
@@ -156,10 +167,50 @@ npm run build
 ```
 
 Os testes usam o executor nativo do Node.js com suporte a TypeScript, em um
-único processo e sem uma dependência adicional de testes. As chamadas HTTP são
+único processo. Os testes de interface usam jsdom para montar os componentes
+React, com compilação de JSX pelo TypeScript. As chamadas HTTP são
 substituídas nos testes: não exigem backend em execução, rede ou credenciais.
 A suíte também verifica a recuperação da sessão, falhas de armazenamento,
 rascunhos e chegada de respostas/erros após trocar a conversa selecionada.
+Os testes de interface também cobrem a inicialização sem `crypto.randomUUID`,
+armazenamento bloqueado ou inválido e dois envios simultâneos com respostas
+fora de ordem. Os identificadores usam `crypto.getRandomValues` quando
+`randomUUID` não está disponível, como no acesso por IP em HTTP na rede local.
+
+## Auditoria de dependências
+
+Na pasta `frontend/`, consulte separadamente as dependências de produção e o
+conjunto completo, incluindo as ferramentas de desenvolvimento:
+
+```bash
+npm audit --omit=dev
+npm audit
+```
+
+A atualização de segurança usa Next.js e `eslint-config-next` 16.4.3 e Zod
+4.6.7 no lockfile. O override de `minimatch` para 11.0.1 remove as versões
+afetadas pelo [aviso de segurança](https://github.com/advisories/GHSA-g3hv-75wg-m249).
+Na verificação desta atualização, tanto a auditoria completa quanto a de
+produção retornaram zero vulnerabilidades.
+
+Os plugins `eslint-plugin-import`, `eslint-plugin-jsx-a11y` e
+`eslint-plugin-react` ainda usam chamadas da API antiga de `minimatch`.
+O script `postinstall` aplica um adaptador local a essas chamadas, delegando o
+processamento de padrões exclusivamente à versão corrigida. As regras de lint
+continuam habilitadas e possuem testes de regressão para essa integração.
+Consulte os [detalhes de manutenção](vendor/minimatch-compat/README.md).
+
+Use `npm ci` com os scripts de instalação habilitados. Caso tenha instalado com
+`--ignore-scripts`, execute `npm run postinstall` antes do lint e dos testes.
+O adaptador valida as versões dos três plugins e interrompe a instalação se
+elas mudarem: nesse caso, revise a integração antes de aceitar a atualização.
+Remova o script, o adaptador e o override quando os plugins suportarem
+nativamente uma versão corrigida. Evite `npm audit fix --force`, que pode
+substituir a configuração atual por versões incompatíveis.
+
+`--loglevel=error` controla apenas os logs de instalação; não corrige
+vulnerabilidades nem oculta o resumo da auditoria. Os resultados podem mudar
+conforme novos avisos são publicados.
 
 ## Roteiro de verificação manual
 
@@ -176,8 +227,9 @@ rascunhos e chegada de respostas/erros após trocar a conversa selecionada.
    que mensagens e rascunhos permanecem separados.
 7. Atualize a página: a lista, a conversa selecionada e os rascunhos devem voltar.
 8. Atrase uma resposta pelas ferramentas de rede do navegador. Crie ou selecione
-   outra conversa, escreva nela e confira que a resposta chega apenas à conversa
-   de origem. Durante a espera, nenhum segundo envio deve ser permitido.
+   outra conversa e envie nela antes da primeira terminar. Confira os indicadores
+   de espera em ambas e que cada resposta chega apenas à conversa de origem,
+   mesmo fora de ordem. Na mesma conversa, um segundo envio fica bloqueado.
 9. Recarregue durante um envio: a mensagem deve voltar como rascunho, sem ser
    enviada automaticamente e sem deixar uma indicação permanente de carregamento.
 10. Pare o backend e envie uma mensagem: o erro deve aparecer, com o rascunho
