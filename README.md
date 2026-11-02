@@ -176,9 +176,19 @@ Em outro terminal, a partir da raiz:
 
 ```bash
 cd frontend
-npm ci
+npm ci --loglevel=error
 npm run dev
 ```
+
+Aguarde a instalação terminar com sucesso antes de executar `npm run dev`.
+O parâmetro `--loglevel=error` oculta os avisos conhecidos dos plugins de lint
+com ESLint 10 e mantém os erros de instalação visíveis; ele não altera a
+resolução das dependências. Para consultar os avisos, execute `npm ci` sem esse
+parâmetro. Veja os detalhes no [guia do frontend](frontend/README.md#executar-localmente).
+
+Mantenha os scripts de instalação habilitados: o `postinstall` adapta os plugins
+de lint à versão corrigida de `minimatch`. Consulte a
+[auditoria de dependências](frontend/README.md#auditoria-de-dependências).
 
 Mantenha os dois processos ativos. `--reload` e `npm run dev` são recursos de
 desenvolvimento, não uma configuração de produção.
@@ -310,7 +320,7 @@ uv run --locked pytest -q -W error
 Na pasta `frontend/`:
 
 ```bash
-npm ci
+npm ci --loglevel=error
 npm run lint
 npm test
 npx tsc --noEmit

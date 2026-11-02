@@ -7,14 +7,14 @@ export interface PendingSend {
 
 export interface ConversationsState {
   session: ConversationSession | null;
-  pending: PendingSend | null;
+  pendingByConversation: Record<string, PendingSend>;
   errors: Record<string, string>;
   storageWarning: string | null;
 }
 
 export const initialConversationsState: ConversationsState = {
   session: null,
-  pending: null,
+  pendingByConversation: {},
   errors: {},
   storageWarning: null,
 };
@@ -75,7 +75,7 @@ export function conversationsReducer(
       ) return state;
       return { ...state, session: { ...session, activeConversationId: action.conversationId } };
     case "draft":
-      if (state.pending?.conversationId === action.conversationId) return state;
+      if (state.pendingByConversation[action.conversationId]) return state;
       return {
         ...state,
         session: {
@@ -88,10 +88,10 @@ export function conversationsReducer(
         },
       };
     case "begin":
-      if (state.pending || !session.conversations.some(({ id }) => id === action.pending.conversationId)) return state;
+      if (state.pendingByConversation[action.pending.conversationId] || !session.conversations.some(({ id }) => id === action.pending.conversationId)) return state;
       return {
         ...state,
-        pending: action.pending,
+        pendingByConversation: { ...state.pendingByConversation, [action.pending.conversationId]: action.pending },
         errors: { ...state.errors, [action.pending.conversationId]: "" },
         session: {
           ...session,
@@ -108,15 +108,17 @@ export function conversationsReducer(
       };
     case "success":
     case "failure": {
-      const pending = state.pending;
+      const pending = state.pendingByConversation[action.conversationId];
       if (!pending || pending.conversationId !== action.conversationId || pending.userMessage.id !== action.requestId) return state;
+      const pendingByConversation = { ...state.pendingByConversation };
+      delete pendingByConversation[action.conversationId];
       if (action.type === "failure") {
         // O rascunho original ficou na conversa; não é necessário reconstruí-lo.
-        return { ...state, pending: null, errors: { ...state.errors, [action.conversationId]: action.error } };
+        return { ...state, pendingByConversation, errors: { ...state.errors, [action.conversationId]: action.error } };
       }
       return {
         ...state,
-        pending: null,
+        pendingByConversation,
         session: {
           ...session,
           conversations: session.conversations.map((conversation) =>
