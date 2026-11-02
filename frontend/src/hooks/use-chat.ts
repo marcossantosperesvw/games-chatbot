@@ -3,6 +3,7 @@
 import { useEffect, useReducer, useRef, useState } from "react";
 
 import { sendChatMessage } from "@/lib/api";
+import { createId } from "@/lib/id";
 import { createChatRequest, getHistoryError } from "@/lib/chat";
 import { loadConversationSession, saveConversationSession } from "@/lib/conversation-storage";
 import { conversationsReducer, createConversation, initialConversationsState } from "@/lib/conversations";
@@ -19,7 +20,7 @@ export function useChat() {
     canPersist.current = restored.canPersist;
     let session = restored.session;
     if (!session) {
-      const conversation = createConversation(crypto.randomUUID(), new Date().toISOString());
+      const conversation = createConversation(createId(), new Date().toISOString());
       session = { version: 1, conversations: [conversation], activeConversationId: conversation.id };
     }
     dispatch({ type: "restore", session, warning: restored.warning });
@@ -60,7 +61,7 @@ export function useChat() {
 
   function startNewConversation() {
     if (!state.session) return;
-    dispatch({ type: "create", conversation: createConversation(crypto.randomUUID(), new Date().toISOString()) });
+    dispatch({ type: "create", conversation: createConversation(createId(), new Date().toISOString()) });
   }
 
   function selectConversation(conversationId: string) {
@@ -85,7 +86,7 @@ export function useChat() {
     }
 
     const userMessage: ChatMessage = {
-      id: crypto.randomUUID(),
+      id: createId(),
       role: "user",
       content: request.message,
     };
@@ -104,7 +105,7 @@ export function useChat() {
         type: "success",
         conversationId,
         requestId: userMessage.id,
-        assistant: { id: crypto.randomUUID(), ...response.message },
+        assistant: { id: createId(), ...response.message },
         now: new Date().toISOString(),
       });
     } catch (cause) {

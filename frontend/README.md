@@ -167,10 +167,15 @@ npm run build
 ```
 
 Os testes usam o executor nativo do Node.js com suporte a TypeScript, em um
-único processo e sem uma dependência adicional de testes. As chamadas HTTP são
+único processo. Os testes de interface usam jsdom para montar os componentes
+React, com compilação de JSX pelo TypeScript. As chamadas HTTP são
 substituídas nos testes: não exigem backend em execução, rede ou credenciais.
 A suíte também verifica a recuperação da sessão, falhas de armazenamento,
 rascunhos e chegada de respostas/erros após trocar a conversa selecionada.
+Os testes de interface também cobrem a inicialização sem `crypto.randomUUID`,
+armazenamento bloqueado ou inválido e dois envios simultâneos com respostas
+fora de ordem. Os identificadores usam `crypto.getRandomValues` quando
+`randomUUID` não está disponível, como no acesso por IP em HTTP na rede local.
 
 ## Auditoria de dependências
 
