@@ -6,6 +6,7 @@ from fastapi import APIRouter, HTTPException, Request, status
 
 from app.api.schemas import ChatRequest, ChatResponse, ErrorResponse
 from app.core.errors import AIConfigurationError, AIProviderError, AITimeoutError
+from app.core.usage_limits import UsageLimitError
 from app.services.chat_service import generate_reply
 
 
@@ -18,8 +19,10 @@ router = APIRouter(prefix="/api", tags=["chat"])
     response_model=ChatResponse,
     summary="Enviar uma mensagem ao agente especializado em jogos",
     responses={
+        413: {"model": ErrorResponse, "description": "Pergunta e histórico excedem o contexto permitido."},
+        429: {"model": ErrorResponse, "description": "Limite de requisições por minuto ou dia atingido."},
         502: {"model": ErrorResponse, "description": "Falha na resposta da IA."},
-        503: {"model": ErrorResponse, "description": "IA indisponível ou não configurada."},
+        503: {"model": ErrorResponse, "description": "Chat ocupado ou IA indisponível/não configurada."},
         504: {"model": ErrorResponse, "description": "Tempo limite da IA excedido."},
         500: {
             "model": ErrorResponse,
@@ -29,13 +32,21 @@ router = APIRouter(prefix="/api", tags=["chat"])
 )
 async def chat(request: ChatRequest, http_request: Request) -> ChatResponse:
     try:
-        message = await generate_reply(request, catalog=http_request.app.state.catalog,
-                                       knowledge=http_request.app.state.knowledge,
-                                       videos=http_request.app.state.videos)
+        admission = http_request.app.state.chat_admission
+        admission.validate_context(len(request.message) + sum(len(item.content) for item in request.history))
+        # Usar o peer interpretado pelo servidor ASGI, nunca ler X-Forwarded-For
+        # diretamente. Proxies confiáveis serão configurados na implantação AWS.
+        client_key = http_request.client.host if http_request.client else "unknown"
+        with admission.admit(client_key):
+            message = await generate_reply(request, catalog=http_request.app.state.catalog,
+                                           knowledge=http_request.app.state.knowledge,
+                                           videos=http_request.app.state.videos)
         return ChatResponse(
             conversation_id=request.conversation_id,
             message=message,
         )
+    except UsageLimitError as error:
+        raise HTTPException(status_code=error.status_code, detail=error.detail, headers=error.headers) from None
     except (AIConfigurationError, AIProviderError, AITimeoutError) as error:
         code, detail = {
             AIConfigurationError: (

@@ -158,7 +158,9 @@ def test_real_sdk_retrieves_context_and_generates_cited_reply(monkeypatch, mode)
     evidence = json.loads(tool_output["output"])
     assert evidence["status"] == "ok"
     assert evidence["passages"][0]["synthetic"] is True
-    assert {tool["name"] for tool in sent[0]["tools"]} == {"search_games", "search_knowledge"}
+    assert {tool["name"] for tool in sent[0]["tools"]} == {"search_knowledge"}
+    assert "Catálogo indisponível" in sent[0]["instructions"]
+    assert "RAG: search_knowledge disponível" in sent[0]["instructions"]
     assert len(embeddings) == (1 if mode == "semantic" else 0)
     if embeddings:
         assert embeddings[0]["model"] == "fake-embedding-model"
