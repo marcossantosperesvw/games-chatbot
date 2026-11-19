@@ -152,6 +152,17 @@ e são canceladas quando o componente é desmontado.
 - O backend agora rejeita saídas da IA acima de 4.000 caracteres. Conversas antigas
   da etapa simulada podem conter respostas maiores; a interface preserva esses
   dados e orienta iniciar uma nova conversa, sem apagar conteúdo silenciosamente.
+- O limite agregado da pergunta e do histórico é aplicado pelo backend. O
+  frontend não corta mensagens nem fixa uma segunda configuração desse limite:
+  uma resposta HTTP `413` orienta reduzir a pergunta ou iniciar outra conversa,
+  mantendo o histórico e o rascunho existentes.
+- HTTP `429` informa excesso de frequência ou esgotamento da cota diária;
+  HTTP `503` com `X-Chat-Error: capacity_limit` informa ocupação temporária,
+  distinguindo-a da indisponibilidade da IA. `Retry-After` em segundos pode ser
+  apresentado como orientação, mas não agenda reenvios. O backend deve expor
+  `X-Chat-Error` e `Retry-After` no CORS para o navegador ler esses cabeçalhos.
+  A cota diária do processo é renovada às 00:00 UTC. Todos esses erros preservam
+  o texto para uma nova tentativa manual; não há reenvio automático.
 
 Mensagens são exibidas como texto. Conteúdo HTML recebido da API não é executado.
 

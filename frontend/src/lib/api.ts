@@ -51,12 +51,33 @@ export async function sendChatMessage(
   }
 
   if (!response.ok) {
+    const errorCode = response.headers.get("X-Chat-Error");
+    const retryAfter = response.headers.get("Retry-After");
+    const retrySeconds = retryAfter && /^\d{1,5}$/.test(retryAfter)
+      ? Number(retryAfter) : null;
+    const wait = retrySeconds !== null && retrySeconds > 0 && retrySeconds <= 86_400
+      ? ` Aguarde ${retrySeconds} segundos antes de tentar novamente.`
+      : " Aguarde um pouco antes de tentar novamente.";
+    if (response.status === 413) {
+      throw new Error(
+        "A mensagem e o histórico juntos ultrapassam o limite de contexto do chat. Reduza sua mensagem ou inicie uma nova conversa; o histórico não foi alterado.",
+      );
+    }
+    if (response.status === 429) {
+      if (errorCode === "daily_limit") {
+        throw new Error("O limite diário de mensagens do chat foi atingido. O limite é renovado às 00:00 UTC; tente novamente após a renovação.");
+      }
+      throw new Error(`Muitas mensagens em pouco tempo.${wait}`);
+    }
     if (response.status === 422) {
       throw new Error(
         "A mensagem ou o histórico não atende aos limites do chat. Revise o texto ou inicie uma nova conversa.",
       );
     }
     if (response.status === 503) {
+      if (errorCode === "capacity_limit") {
+        throw new Error(`O chat está ocupado com outras solicitações.${wait}`);
+      }
       throw new Error("A inteligência artificial está indisponível. Verifique a configuração do backend.");
     }
     if (response.status === 504) {
@@ -68,7 +89,11 @@ export async function sendChatMessage(
   let data: unknown;
   try {
     data = await response.json();
-  } catch {
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    if (timeout.aborted) {
+      throw new Error("O servidor demorou para responder. Tente novamente.");
+    }
     throw new Error("O servidor retornou uma resposta inválida. Tente novamente.");
   }
 

@@ -13,6 +13,7 @@ from app.api.chat import router as chat_router
 from app.api.catalog import router as catalog_router
 from app.catalog.igdb_client import IGDBClient
 from app.core.logging import configure_agent_logging
+from app.core.usage_limits import ChatAdmission, get_usage_settings
 from app.rag.config import get_rag_settings
 from app.rag.errors import RagError
 from app.rag.index import load_index
@@ -33,6 +34,7 @@ CORS_ORIGINS = [
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    app.state.chat_admission = ChatAdmission(get_usage_settings())
     app.state.knowledge = None
     try:
         settings = get_rag_settings()
@@ -75,6 +77,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Chat-Error", "Retry-After"],
 )
 
 app.include_router(chat_router)

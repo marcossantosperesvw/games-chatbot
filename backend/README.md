@@ -53,6 +53,42 @@ o histórico também consome tokens e chamadas que falham ou expiram podem ter c
 CORS_ORIGINS=https://chat.exemplo.com,https://admin.exemplo.com
 ```
 
+### Limites de uso do chat
+
+Os valores abaixo são configuráveis em `.env` e carregados na inicialização.
+Não é necessário alterar seu arquivo local: se as variáveis estiverem ausentes,
+estes padrões são aplicados. Reinicie a API após mudar uma configuração.
+
+| Variável | Padrão | Controle |
+| --- | --- | --- |
+| `CHAT_MAX_CONTEXT_CHARACTERS` | `24000` | Soma de pergunta e histórico, em pontos de código Unicode, após validação dos textos |
+| `CHAT_REQUESTS_PER_MINUTE` | `6` | Requisições aceitas por IP em janela móvel de 60 segundos |
+| `CHAT_MAX_CONCURRENT_REQUESTS` | `2` | Execuções simultâneas, sem fila |
+| `CHAT_MAX_REQUESTS_PER_DAY` | `200` | Requisições aceitas no processo por dia UTC |
+
+O contexto excedente recebe HTTP 413 antes de reservar uma vaga ou chamar a IA;
+nenhuma mensagem é truncada. Taxa e cota diária retornam HTTP 429; servidor ocupado,
+HTTP 503. O cabeçalho `X-Chat-Error` distingue `context_limit`, `rate_limit`,
+`daily_limit` e `capacity_limit`. `Retry-After`, em segundos, acompanha recusas
+temporárias e é exposto por CORS. O frontend orienta a nova tentativa sem reenviar.
+
+Somente requisições admitidas consomem cotas. Falhas do provedor, classificações
+fora de escopo, timeouts e cancelamentos também contam após a admissão, porque
+podem consumir recursos/tokens; a vaga de concorrência é sempre liberada.
+Mensagens inválidas e recusas por contexto, taxa ou capacidade não consomem cotas.
+
+Os limites são locais a **um processo** e reiniciam com ele; vários workers ou
+réplicas multiplicam os limites. IPs sem atividade expiram da janela; no máximo
+1.024 IPs são mantidos, recusando novos clientes temporariamente se a tabela
+estiver cheia. Clientes que compartilham IP compartilham a taxa.
+Usamos o endereço do cliente recebido pelo servidor ASGI, não lemos cabeçalhos
+`X-Forwarded-For` diretamente. Na AWS será obrigatório configurar proxies
+confiáveis e revisar esse modelo antes de habilitar múltiplas instâncias.
+
+Essas proteções não autenticam usuários, não são um teto financeiro nem proteção
+completa contra abuso de rede. O limite incide sobre `/api/chat`, não sobre
+`/api/games`, que continua sujeito aos controles locais próprios da IGDB.
+
 ## Executar localmente
 
 ```bash
@@ -156,7 +192,11 @@ são rejeitadas, sem truncamento silencioso, para manter o próximo turno válid
 - **HTTP 502:** falha de comunicação/provedor ou resposta inválida da IA, incluindo
   chave recusada, modelo inacessível ou cota excedida. Confira credenciais,
   acesso ao modelo, saldo e limites no painel; os detalhes do provedor não são expostos.
-- **HTTP 503:** chave/modelo ausentes ou configuração local inválida. Corrija `.env`
+- **HTTP 413:** pergunta e histórico excedem o contexto agregado permitido; não
+  há truncamento nem chamada à IA.
+- **HTTP 429:** limite por IP ou diário de requisições aceitas atingido.
+- **HTTP 503 com `X-Chat-Error: capacity_limit`:** todas as vagas estão ocupadas.
+- **HTTP 503 sem esse código:** chave/modelo ausentes ou configuração local inválida. Corrija `.env`
   e reinicie a API. O health check continua disponível, mas não testa a OpenAI.
 - **HTTP 504:** timeout da IA. O frontend preserva o rascunho, sem reenvio automático.
 
@@ -192,12 +232,17 @@ separado, não por uma suposta memória global do agente.
   reiniciar ao editar apenas esse Markdown. Nunca coloque credenciais nele.
 - `agents/game_agent.py`: carrega e valida o Markdown, configura modelo e limite
   de geração. Arquivo ausente, vazio ou ilegível causa HTTP 503, sem chamada ao modelo.
-  Um agente basta; há uma ferramenta de consulta, sem handoffs ou compras automáticas.
+  `AgentCapabilities` determina ferramentas e rodadas pela mesma lista: até duas
+  consultas de catálogo, duas documentais e uma de vídeo, mais uma rodada final.
+  Ferramentas sem dependência disponível são omitidas e as instruções informam
+  suas limitações; vídeos também exigem consentimento. Não há handoffs ou compras.
 - `tools/catalog.py`: adapta a consulta para o SDK, limita resultados/chamadas e
   registra as URLs permitidas apenas durante a requisição atual.
 - `catalog/`: autentica na Twitch, resolve filtros por nome na IGDB, controla cache
   e ritmo de requisições e normaliza os resultados. Não interpreta o perfil do usuário.
 - `core/config.py`: lê e valida configurações, protegendo a representação da chave.
+- `core/usage_limits.py`: valida contexto e controla admissão por IP, concorrência
+  e cota diária antes da classificação ou geração paga.
 - `core/errors.py` e `core/logging.py`: falhas classificadas e logs do SDK sem
   mensagens brutas do provedor. Não habilite logs de depuração HTTP com dados reais.
 
@@ -211,11 +256,11 @@ são enviados à OpenAI para compor a resposta. Não envie informações sensív
 `.env` é ignorado pelo Git; nunca use
 `NEXT_PUBLIC_OPENAI_API_KEY` nem coloque uma chave em arquivos de exemplo.
 
-Sem login e sem proteção contra abuso, esta versão é para desenvolvimento local.
-CORS não autentica clientes. Antes de publicar, precisamos aprovar limites de
-requisições, proteção da API e controle de custos. Até 50 mensagens de 4.000
-caracteres ainda podem consumir muito contexto; sumarização/limite total de tokens
-serão decisões futuras, sem descarte silencioso nesta entrega.
+Esta versão continua voltada a ambiente controlado. CORS não autentica clientes;
+os limites locais reduzem consumo, mas antes de publicar precisamos configurar
+acesso, proxies, HTTPS e operação na AWS. O orçamento de 24.000 caracteres não é
+um limite exato de tokens e não inclui instruções/resultados das ferramentas;
+sumarização automática não está implementada.
 
 ## Testes automatizados
 

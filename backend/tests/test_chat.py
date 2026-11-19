@@ -112,11 +112,13 @@ def test_rejects_invalid_history(client, payload, history):
     assert client.post("/api/chat", json=payload).status_code == 422
 
 
-def test_accepts_message_and_history_at_the_limits(client, payload):
+def test_rejects_individually_valid_fields_above_aggregate_context_limit(client, payload):
     payload["message"] = "a" * 4000
     payload["history"] = [{"role": "user", "content": "b" * 4000}] * 50
 
-    assert client.post("/api/chat", json=payload).status_code == 200
+    response = client.post("/api/chat", json=payload)
+    assert response.status_code == 413
+    assert response.headers["X-Chat-Error"] == "context_limit"
 
 
 def test_rejects_unknown_request_fields(client, payload):

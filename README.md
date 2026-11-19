@@ -222,6 +222,10 @@ alterar seu `.env`; variáveis já exportadas no terminal têm precedência.
 | `OPENAI_MODEL` | Backend | Identificador explícito do modelo escolhido |
 | `OPENAI_TIMEOUT_SECONDS` | Backend | Prazo total do chat; padrão `25` segundos |
 | `OPENAI_MAX_OUTPUT_TOKENS` | Backend | Orçamento de geração; padrão `800` |
+| `CHAT_MAX_CONTEXT_CHARACTERS` | Backend | Pergunta + histórico validados, em caracteres Unicode; padrão `24000` |
+| `CHAT_REQUESTS_PER_MINUTE` | Backend | Requisições aceitas por IP em janela móvel de 60 s; padrão `6` |
+| `CHAT_MAX_CONCURRENT_REQUESTS` | Backend | Execuções simultâneas por processo, sem fila; padrão `2` |
+| `CHAT_MAX_REQUESTS_PER_DAY` | Backend | Requisições aceitas por dia UTC/processo; padrão `200` |
 | `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET` | Backend | Credenciais do aplicativo confidencial Twitch |
 | `IGDB_TIMEOUT_SECONDS` | Backend | Prazo da pesquisa; padrão `5` segundos |
 | `CORS_ORIGINS` | Backend | Origens autorizadas, separadas por vírgulas; padrão local |
@@ -302,11 +306,13 @@ Antes de executar o agente, a API classifica a mensagem atual com o contexto
 recente. Pedidos fora de jogos recebem uma resposta fixa e não acionam as
 ferramentas. A classificação usa uma chamada adicional à OpenAI.
 
-Limites principais: mensagem de até 4.000 caracteres, histórico de até 50 mensagens
-e saída de até 4.000 caracteres. Campos desconhecidos são rejeitados.
-Erros incluem `422` (entrada inválida), `502` (provedor/saída inválida), `503`
-(indisponibilidade/configuração) e `504` (timeout); o catálogo também pode retornar
-`429`. O contrato completo está no [guia do backend](backend/README.md) e no Swagger.
+Limites principais: mensagem de até 4.000 caracteres, histórico de até 50 mensagens,
+pergunta + histórico de até 24.000 caracteres por padrão e saída de até 4.000
+caracteres. Nenhum contexto é cortado silenciosamente. Campos desconhecidos são
+rejeitados. Erros incluem `413` (contexto agregado), `422` (entrada inválida), `429`
+(taxa/cota), `502` (provedor/saída inválida), `503` (ocupado ou indisponível) e `504`
+(timeout). Cabeçalhos `X-Chat-Error` e `Retry-After` permitem distinguir recusas.
+O contrato completo está no [guia do backend](backend/README.md) e no Swagger.
 
 ## Testes e qualidade
 
@@ -364,8 +370,11 @@ ser registrados para a revisão e o ambiente efetivamente testados.
   ou de redirecionamentos futuros nas lojas.
 - Textos e documentos externos não são considerados instruções do sistema.
   As validações técnicas não provam que todas as afirmações do modelo são verdadeiras.
-- CORS não autentica usuários. Sem proteção pública contra abuso e orçamento
-  global, esta versão deve permanecer em ambiente controlado.
+- CORS não autentica usuários. O chat possui limites locais de contexto, taxa,
+  concorrência e cota diária; não são globais entre workers/instâncias e reiniciam
+  com o processo. Falhas após admissão também contam. Antes da exposição pública,
+  é necessário configurar proxies confiáveis, acesso e operação na AWS; por
+  enquanto mantenha a versão em ambiente controlado.
 - Histórico, ferramentas e geração influenciam o custo. Timeouts e limites de
   tokens não equivalem a teto financeiro; chamadas interrompidas podem cobrar.
 
