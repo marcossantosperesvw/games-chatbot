@@ -27,7 +27,7 @@ export function MessageList({ messages, isSending }: MessageListProps) {
       aria-label="Mensagens da conversa"
       aria-live="polite"
       aria-relevant="additions"
-      className="flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8"
+      className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-6 sm:px-8"
     >
       <ol className="mx-auto flex max-w-3xl flex-col gap-6">
         {messages.map((message) => {
