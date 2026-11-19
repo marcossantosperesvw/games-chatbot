@@ -45,6 +45,28 @@ test("sessão nova sem randomUUID sai da recuperação e mostra sugestões", asy
   assert.equal(document.querySelector("textarea").disabled, false);
 });
 
+test("shell ocupa a janela no desktop e preserva os controles do layout mobile", async (t) => {
+  const document = await mountChat(t);
+  const main = document.querySelector("main");
+  assert.ok(main.classList.contains("md:h-dvh"));
+  assert.equal(main.classList.contains("max-w-7xl"), false);
+  assert.equal(main.classList.contains("overflow-hidden"), false);
+  const sidebar = document.querySelector("#conversation-sidebar");
+  assert.ok(sidebar.classList.contains("md:w-64"));
+  assert.ok(sidebar.parentElement.classList.contains("md:flex-1"));
+  assert.ok(sidebar.parentElement.classList.contains("md:rounded-none"));
+  const consent = document.querySelector('input[type="checkbox"]');
+  assert.ok(consent.closest("label").classList.contains("max-w-3xl"));
+  const toggle = document.querySelector('[aria-controls="conversation-sidebar"]');
+  assert.equal(toggle.getAttribute("aria-expanded"), "false");
+  await act(async () => toggle.click());
+  assert.equal(toggle.getAttribute("aria-expanded"), "true");
+  assert.ok(sidebar.classList.contains("flex"));
+  await act(async () => toggle.click());
+  assert.equal(toggle.getAttribute("aria-expanded"), "false");
+  assert.ok(sidebar.classList.contains("hidden"));
+});
+
 test("dados inválidos são preservados sem impedir sugestões e nova conversa", async (t) => {
   const document = await mountChat(t, (window) => {
     window.sessionStorage.setItem("chat-jogos:session:v1", "dados inválidos");

@@ -83,7 +83,7 @@ def test_sdk_sends_history_once_and_disables_storage_and_traces(monkeypatch):
 
     async def observed_run(*args, **kwargs):
         configs.append(kwargs["run_config"])
-        assert kwargs["max_turns"] == 3
+        assert kwargs["max_turns"] == 1
         return await original_run(*args, **kwargs)
 
     monkeypatch.setattr(chat_service.Runner, "run", observed_run)
@@ -99,7 +99,7 @@ def test_sdk_sends_history_once_and_disables_storage_and_traces(monkeypatch):
     assert sent[0]["store"] is False
     assert sent[0]["max_output_tokens"] == 800
     assert "Chat Jogos" in sent[0]["instructions"]
-    assert sent[0]["instructions"] == game_agent.load_instructions()
+    assert sent[0]["instructions"].startswith(game_agent.load_instructions())
     assert configs[0].tracing_disabled is True
     assert clients[0].is_closed()
 
@@ -126,7 +126,7 @@ def test_sdk_reads_saved_markdown_on_each_request(monkeypatch, tmp_path):
     for text in ("# Perfil\nResponda de forma breve.", "# Perfil\nFaça uma pergunta por vez."):
         path.write_text(text, encoding="utf-8")
         asyncio.run(chat_service.generate_reply(request()))
-        assert sent[-1]["instructions"] == text
+        assert sent[-1]["instructions"].startswith(text)
     assert len(sent) == 2
 
 

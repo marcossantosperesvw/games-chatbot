@@ -35,7 +35,7 @@ export function ChatComposer({
 
   return (
     <form
-      className="border-t border-slate-800 bg-slate-900/90 px-4 py-4 sm:px-8"
+      className="shrink-0 border-t border-slate-800 bg-slate-900/90 px-4 py-4 sm:px-8"
       aria-label="Enviar mensagem"
       aria-busy={isSending}
       onSubmit={(event) => {

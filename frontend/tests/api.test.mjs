@@ -98,3 +98,81 @@ test("preserva o cancelamento solicitado pela interface", async () => {
   mock.method(globalThis, "fetch", async () => { throw cancellation; });
   await assert.rejects(sendChatMessage(request, controller.signal), (error) => error === cancellation);
 });
+
+test("contexto excedido é informado sem cortar a pergunta ou o histórico", async () => {
+  const longRequest = {
+    ...request,
+    message: "🎮".repeat(4000),
+    history: Array.from({ length: 6 }, () => ({ role: "user", content: "a".repeat(4000) })),
+  };
+  const original = structuredClone(longRequest);
+  const fetchMock = mock.method(globalThis, "fetch", async () => Response.json(
+    { detail: "não deve aparecer" },
+    { status: 413, headers: { "X-Chat-Error": "context_limit", "X-Chat-Context-Limit": "24000" } },
+  ));
+  await assert.rejects(sendChatMessage(longRequest), /limite de contexto.*histórico não foi alterado/);
+  assert.deepEqual(JSON.parse(fetchMock.mock.calls[0].arguments[1].body), original);
+  assert.deepEqual(longRequest, original);
+  assert.equal(fetchMock.mock.callCount(), 1);
+});
+
+test("limites temporário, diário e de capacidade têm mensagens distintas sem reenvio", async () => {
+  for (const [status, code, expected] of [
+    [429, "rate_limit", /Muitas mensagens.*Aguarde 42 segundos/],
+    [429, "daily_limit", /limite diário.*00:00 UTC/],
+    [503, "capacity_limit", /chat está ocupado.*Aguarde 42 segundos/],
+  ]) {
+    const fetchMock = mock.method(globalThis, "fetch", async () => Response.json(
+      { detail: "segredo" },
+      { status, headers: { "X-Chat-Error": code, "Retry-After": "42" } },
+    ));
+    await assert.rejects(sendChatMessage(request), expected);
+    assert.equal(fetchMock.mock.callCount(), 1);
+    mock.restoreAll();
+  }
+});
+
+test("Retry-After ausente, inválido ou exagerado não é exibido como instrução", async () => {
+  for (const retryAfter of [null, "conteúdo não confiável", "-1", "99999", "1.5"]) {
+    const headers = { "X-Chat-Error": "capacity_limit" };
+    if (retryAfter !== null) headers["Retry-After"] = retryAfter;
+    mock.method(globalThis, "fetch", async () => new Response(null, { status: 503, headers }));
+    await assert.rejects(sendChatMessage(request), {
+      message: "O chat está ocupado com outras solicitações. Aguarde um pouco antes de tentar novamente.",
+    });
+    mock.restoreAll();
+  }
+});
+
+test("429 sem código reconhecido continua amigável e não expõe o corpo", async () => {
+  mock.method(globalThis, "fetch", async () => new Response("segredo", { status: 429 }));
+  await assert.rejects(sendChatMessage(request), {
+    message: "Muitas mensagens em pouco tempo. Aguarde um pouco antes de tentar novamente.",
+  });
+});
+
+test("timeout durante leitura do JSON não é classificado como resposta inválida", async () => {
+  const timeout = new AbortController();
+  mock.method(AbortSignal, "timeout", () => timeout.signal);
+  mock.method(globalThis, "fetch", async () => ({
+    ok: true,
+    async json() {
+      timeout.abort();
+      throw new DOMException("Tempo excedido ao ler o corpo", "AbortError");
+    },
+  }));
+  await assert.rejects(sendChatMessage(request), /demorou para responder/);
+});
+
+test("cancelamento durante leitura do JSON é preservado", async () => {
+  const controller = new AbortController();
+  const cancellation = new DOMException("Cancelado ao ler o corpo", "AbortError");
+  mock.method(globalThis, "fetch", async () => ({
+    ok: true,
+    async json() {
+      controller.abort();
+      throw cancellation;
+    },
+  }));
+  await assert.rejects(sendChatMessage(request, controller.signal), (error) => error === cancellation);
+});

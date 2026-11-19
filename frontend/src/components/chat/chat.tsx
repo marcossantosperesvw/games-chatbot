@@ -34,8 +34,8 @@ export function Chat() {
   }
 
   return (
-    <main className="mx-auto flex min-h-svh w-full max-w-7xl flex-col px-3 py-4 sm:px-6 sm:py-6">
-      <header className="mb-5 flex items-center justify-between gap-3 px-1">
+    <main className="flex min-h-svh w-full flex-col px-3 py-4 sm:px-6 sm:py-6 md:h-dvh md:px-0 md:py-0">
+      <header className="mb-5 flex shrink-0 items-center justify-between gap-3 px-1 md:mb-0 md:border-b md:border-slate-800 md:px-6 md:py-3">
         <div className="flex items-center gap-3">
           <span
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-400/30 bg-indigo-500/10 text-indigo-300"
@@ -71,12 +71,12 @@ export function Chat() {
       </header>
 
       {chat.storageWarning && (
-        <p role="status" className="mb-3 rounded-xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-200">
+        <p role="status" className="mb-3 shrink-0 rounded-xl border border-amber-300/20 bg-amber-300/5 px-4 py-3 text-sm text-amber-200 md:mx-4 md:my-2">
           {chat.storageWarning}
         </p>
       )}
       <div
-        className="flex h-[calc(100svh-10rem)] min-h-96 flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-2xl shadow-black/20 sm:h-[calc(100svh-11rem)] md:flex-row"
+        className="flex h-[calc(100svh-10rem)] min-h-96 flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-2xl shadow-black/20 sm:h-[calc(100svh-11rem)] md:h-auto md:flex-1 md:flex-row md:rounded-none md:border-0 md:shadow-none"
       >
         <ConversationSidebar
           conversations={chat.conversations}
@@ -89,7 +89,7 @@ export function Chat() {
           aria-label="Chat sobre jogos"
           className="flex min-h-0 min-w-0 flex-1 flex-col"
         >
-          <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-4 sm:px-8">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-slate-800 px-4 py-4 sm:px-8 md:py-3">
             <div className="flex min-w-0 items-center gap-3">
               <button
                 ref={sidebarToggle}
@@ -120,7 +120,7 @@ export function Chat() {
               Recuperando conversas da sessão…
             </div>
           ) : chat.messages.length === 0 ? (
-            <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-5 py-10 text-center">
+            <div className="flex min-h-0 flex-1 flex-col items-center justify-center-safe overflow-y-auto px-5 py-10 text-center">
               <p className="mb-4 text-xs font-semibold tracking-[0.2em] text-indigo-300">
                 APERTE START
               </p>
@@ -151,8 +151,8 @@ export function Chat() {
             />
           )}
 
-          <div className="border-t border-slate-800 px-4 py-2 text-xs leading-5 text-slate-400 sm:px-8">
-            <label className="flex items-start gap-2">
+          <div className="shrink-0 border-t border-slate-800 px-4 py-2 text-xs leading-5 text-slate-400 sm:px-8">
+            <label className="mx-auto flex max-w-3xl items-start gap-2">
               <input type="checkbox" checked={chat.includeVideos} disabled={chat.isSending}
                 onChange={(event) => chat.setIncludeVideos(event.target.checked)} className="mt-1 accent-indigo-500" />
               <span>Incluir tutoriais do YouTube quando úteis. Autorizo o envio dos termos relevantes da pergunta ao Google e aceito os{" "}
@@ -173,7 +173,7 @@ export function Chat() {
           />
         </section>
       </div>
-      <p className="mt-4 text-center text-xs leading-5 text-slate-500">
+      <p className="mt-4 shrink-0 text-center text-xs leading-5 text-slate-500 md:mt-0 md:border-t md:border-slate-800 md:px-6 md:py-2">
         Respostas geradas por IA podem conter erros. O conteúdo da conversa atual é enviado à OpenAI.
         {" "}
         As conversas são recuperadas ao atualizar esta aba. Fechar a aba normalmente encerra a sessão.

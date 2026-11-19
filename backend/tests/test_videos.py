@@ -250,5 +250,7 @@ def test_api_real_sdk_attaches_only_consulted_video_and_survives_youtube_failure
         assert "[VIDEO:" not in message["content"]
         assert len(message["videos"]) == (0 if unavailable else 1)
         assert len(sent) == 2
-        assert {t["name"] for t in sent[0]["tools"]} == {"search_games", "search_knowledge", "search_videos"}
+        assert {t["name"] for t in sent[0]["tools"]} == {"search_games", "search_videos"}
+        assert "Base RAG indisponível" in sent[0]["instructions"]
+        assert "Vídeos: search_videos disponível com autorização" in sent[0]["instructions"]
         assert "test-youtube-secret" not in json.dumps(sent)
