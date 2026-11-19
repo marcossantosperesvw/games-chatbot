@@ -5,7 +5,7 @@ import asyncio
 from agents import AgentsException, RunConfig, Runner
 from openai import APITimeoutError, AsyncOpenAI, OpenAIError
 
-from app.agents.game_agent import create_game_agent
+from app.agents.game_agent import AgentCapabilities, create_game_agent
 from app.api.schemas import AssistantMessage, ChatRequest
 from app.catalog.igdb_client import IGDBClient
 from app.core.config import get_ai_settings
@@ -28,6 +28,11 @@ async def generate_reply(
     messages.append({"role": "user", "content": request.message})
     context = CatalogContext(catalog=catalog, knowledge=knowledge, videos=videos,
                              video_consent=request.include_videos)
+    capabilities = AgentCapabilities(
+        catalog=catalog is not None,
+        knowledge=knowledge is not None,
+        videos=request.include_videos and videos is not None,
+    )
 
     try:
         async with asyncio.timeout(settings.timeout_seconds):
@@ -37,14 +42,16 @@ async def generate_reply(
                 timeout=settings.timeout_seconds,
                 max_retries=0,
             ) as client:
+                # Validar o Markdown antes até da classificação paga de escopo.
+                agent = create_game_agent(settings, client, capabilities=capabilities)
                 if not await is_game_related(request, client, settings):
                     return AssistantMessage(content=OUT_OF_SCOPE_REPLY)
                 context.embedding_client = client
                 result = await Runner.run(
-                    create_game_agent(settings, client, enable_videos=request.include_videos),
+                    agent,
                     input=messages,
                     context=context,
-                    max_turns=(5 if knowledge else 3) + (1 if request.include_videos and videos else 0),
+                    max_turns=capabilities.max_turns,
                     run_config=RunConfig(tracing_disabled=True),
                 )
     except (TimeoutError, APITimeoutError):
